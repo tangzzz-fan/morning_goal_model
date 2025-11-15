@@ -1,0 +1,24 @@
+{
+  "python_version": "3.12.6 (tags/v3.12.6:a4a2d2b, Sep  6 2024, 20:11:23) [MSC v.1940 64 bit (AMD64)]",
+  "platform": "win32",
+  "packages": {
+    "torch": "2.5.1+cu121",
+    "transformers": "4.57.1",
+    "datasets": "4.4.1",
+    "numpy": "2.3.3",
+    "pandas": "2.3.3",
+    "sklearn": "1.7.2",
+    "matplotlib": "3.10.7",
+    "seaborn": "0.13.2",
+    "tqdm": "4.67.1",
+    "coremltools": "9.0",
+    "onnx": "1.19.1",
+    "onnxruntime": "1.23.2"
+  },
+  "gpu_support": {
+    "pytorch_gpu": true,
+    "tensorflow_gpu": false
+  },
+  "coreml_tools": true,
+  "overall_status": true
+}

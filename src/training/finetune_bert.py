@@ -34,6 +34,17 @@ def to_hf_dataset(df, tokenizer, max_length):
     return enc
 
 
+class DictDataset(torch.utils.data.Dataset):
+    def __init__(self, enc):
+        self.enc = enc
+
+    def __len__(self):
+        return len(self.enc["labels"])
+
+    def __getitem__(self, idx):
+        return {k: torch.tensor(v[idx]) for k, v in self.enc.items()}
+
+
 def freeze_layers(model, keep_last_n):
     for name, param in model.named_parameters():
         param.requires_grad = False
@@ -71,9 +82,12 @@ def main():
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--limit_train", type=int, default=10000)
     parser.add_argument("--limit_eval", type=int, default=2000)
+    parser.add_argument("--grad_accum", type=int, default=1)
     args = parser.parse_args()
     torch.manual_seed(args.seed)
     use_gpu = torch.cuda.is_available()
+    if use_gpu:
+        torch.backends.cudnn.benchmark = True
     train_df, val_df, test_df = read_csvs(args.data_dir)
     if args.limit_train and args.limit_train > 0:
         train_df = train_df.sample(
@@ -96,16 +110,6 @@ def main():
     val_enc = to_hf_dataset(val_df, tokenizer, args.max_length)
     test_enc = to_hf_dataset(test_df, tokenizer, args.max_length)
 
-    class DictDataset(torch.utils.data.Dataset):
-        def __init__(self, enc):
-            self.enc = enc
-
-        def __len__(self):
-            return len(self.enc["labels"])
-
-        def __getitem__(self, idx):
-            return {k: torch.tensor(v[idx]) for k, v in self.enc.items()}
-
     train_ds = DictDataset(train_enc)
     val_ds = DictDataset(val_enc)
     test_ds = DictDataset(test_enc)
@@ -123,7 +127,8 @@ def main():
         save_total_limit=2,
         seed=args.seed,
         fp16=use_gpu,
-        gradient_accumulation_steps=1,
+        gradient_accumulation_steps=args.grad_accum,
+        dataloader_num_workers=0,
     )
     trainer = Trainer(
         model=model,

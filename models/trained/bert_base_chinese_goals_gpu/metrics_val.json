@@ -1,1 +1,1 @@
-{"eval_loss":0.0496462397,"eval_f1":0.9770214056,"eval_accuracy":0.9779166667,"eval_runtime":5.3419,"eval_samples_per_second":2246.412,"eval_steps_per_second":93.601,"epoch":3.0}
+{"eval_loss":0.0496462397,"eval_f1":0.9770214056,"eval_accuracy":0.9779166667,"eval_runtime":5.4877,"eval_samples_per_second":2186.691,"eval_steps_per_second":91.112,"epoch":3.0}

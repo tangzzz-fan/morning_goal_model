@@ -24,7 +24,11 @@ def export_onnx(model, sample_enc, output_path, opset):
     dynamic_axes = {k: {0: "batch", 1: "seq"} for k in inputs.keys()}
     torch.onnx.export(
         model,
-        (inputs["input_ids"], inputs.get("attention_mask"), inputs.get("token_type_ids")),
+        (
+            inputs["input_ids"],
+            inputs.get("attention_mask"),
+            inputs.get("token_type_ids"),
+        ),
         str(output_path),
         input_names=list(inputs.keys()),
         output_names=["logits"],
@@ -93,8 +97,16 @@ def main():
     onnx_path = out / "student_sequence_classification.onnx"
     export_onnx(model, sample_enc, onnx_path, args.opset)
 
-    sess = ort.InferenceSession(str(onnx_path), providers=["CPUExecutionProvider"])
-    metrics = evaluate_consistency(model, tokenizer, sess, sample_texts, args.max_length)
+    sess = ort.InferenceSession(
+        str(onnx_path), providers=["CPUExecutionProvider"]
+    )
+    metrics = evaluate_consistency(
+        model,
+        tokenizer,
+        sess,
+        sample_texts,
+        args.max_length,
+    )
 
     report_md = out / "onnx_evaluation_report.md"
     md = []
