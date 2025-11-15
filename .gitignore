@@ -18,6 +18,7 @@ Thumbs.db
 .idea/
 logs/
 data/raw/
+models/coreml/*.mlpackage
 models/onnx/*.onnx
 models/trained/**/checkpoint-*/
 models/trained/**/pytorch_model.bin
