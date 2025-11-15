@@ -1,6 +1,6 @@
 param(
   [string]$ConfigPath = "configs/params.json",
-  [string[]]$Steps = @("data","train","distill","quantize","prune","onnx")
+  [string[]]$Steps = @("data","train","distill","quantize","prune","onnx","feature_extractor","classifier")
 )
 
 $ErrorActionPreference = "Stop"
@@ -47,6 +47,14 @@ if ($Steps -contains "prune") {
 
 if ($Steps -contains "onnx") {
   Run "python -m src.export.export_onnx --model_dir $($cfg.onnx.model_dir) --data_dir $($cfg.onnx.data_dir) --output_dir $($cfg.onnx.output_dir) --opset $($cfg.onnx.opset) --max_length $($cfg.onnx.max_length) --samples $($cfg.onnx.samples)"
+}
+
+if ($Steps -contains "feature_extractor") {
+  Run "python -m src.export.export_feature_extractor_onnx --model_dir $($cfg.feature_extractor.model_dir) --data_dir $($cfg.feature_extractor.data_dir) --output_dir $($cfg.feature_extractor.output_dir) --opset $($cfg.feature_extractor.opset) --max_length $($cfg.feature_extractor.max_length) --samples $($cfg.feature_extractor.samples)"
+}
+
+if ($Steps -contains "classifier") {
+  Run "python -m src.training.train_small_classifier --model_dir $($cfg.classifier.model_dir) --data_dir $($cfg.classifier.data_dir) --output_dir $($cfg.classifier.output_dir) --max_length $($cfg.classifier.max_length)"
 }
 
 Write-Host "Pipeline completed."

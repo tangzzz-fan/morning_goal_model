@@ -49,5 +49,19 @@
     "opset": 14,
     "max_length": 128,
     "samples": 64
+  },
+  "feature_extractor": {
+    "model_dir": "models/trained/distill_student",
+    "data_dir": "data/processed",
+    "output_dir": "models/onnx",
+    "opset": 14,
+    "max_length": 128,
+    "samples": 64
+  },
+  "classifier": {
+    "model_dir": "models/trained/distill_student",
+    "data_dir": "data/processed",
+    "output_dir": "models/optimized/classifier_baseline",
+    "max_length": 128
   }
 }
