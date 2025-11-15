@@ -1,6 +1,8 @@
 import argparse
 from pathlib import Path
 import coremltools as ct
+import onnx
+from onnx_coreml import convert
 
 
 def main():
@@ -10,9 +12,10 @@ def main():
     args = ap.parse_args()
     out = Path(args.output_dir)
     out.mkdir(parents=True, exist_ok=True)
-    mlmodel = ct.converters.onnx.convert(args.onnx_path)
-    mlpackage = out / "student_sequence_classification.mlpackage"
-    mlmodel.save(str(mlpackage))
+    onnx_model = onnx.load(args.onnx_path)
+    mlmodel = convert(onnx_model)
+    mlmodel_path = out / "student_sequence_classification.mlmodel"
+    ct.utils.save_spec(mlmodel.get_spec(), str(mlmodel_path))
 
 
 if __name__ == "__main__":
