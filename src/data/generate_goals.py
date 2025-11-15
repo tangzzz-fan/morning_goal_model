@@ -1,0 +1,190 @@
+import argparse
+from pathlib import Path
+import random
+import pandas as pd
+from sklearn.model_selection import train_test_split
+
+CATS = [
+    "工作",
+    "健康",
+    "家庭",
+    "个人发展",
+]
+
+PHRASES = {
+    "工作": [
+        "完成项目进度汇报",
+        "整理会议纪要",
+        "推进需求评审",
+        "优化模块代码",
+        "复盘昨天任务",
+        "准备PPT演示",
+        "撰写周报",
+        "更新OKR进度",
+        "安排一对一沟通",
+        "清理邮箱",
+        "完善接口文档",
+        "提交代码Review",
+        "搭建测试用例",
+        "规划本周任务",
+    ],
+    "健康": [
+        "晨跑三公里",
+        "力量训练二十分钟",
+        "早睡不熬夜",
+        "饮水两升",
+        "无糖饮食一天",
+        "午休十五分钟",
+        "拉伸肩颈",
+        "瑜伽三十分钟",
+        "骑行五公里",
+        "步行一万步",
+        "减少咖啡因",
+        "多吃蔬果",
+    ],
+    "家庭": [
+        "与父母通话",
+        "陪孩子阅读",
+        "整理客厅",
+        "准备家庭晚餐",
+        "修理书架",
+        "安排周末出游",
+        "清理冰箱",
+        "采购日用品",
+        "洗衣与收纳",
+        "家庭预算记录",
+    ],
+    "个人发展": [
+        "阅读三十页",
+        "英语口语练习",
+        "完成一节课程",
+        "写作五百字",
+        "冥想十分钟",
+        "复盘年度目标",
+        "练习演讲",
+        "刷题四十分钟",
+        "学习新技能",
+        "整理学习笔记",
+    ],
+}
+
+TEMPLATES = [
+    "今天的目标：{p}",
+    "专注完成：{p}",
+    "只做一件事：{p}",
+    "当日焦点：{p}",
+    "优先事项：{p}",
+    "Focus: {p}",
+    "Just one thing: {p}",
+    "计划：{p}",
+    "打卡：{p}",
+]
+
+EMOJIS = [
+    "💪",
+    "😊",
+    "✅",
+    "🔥",
+    "🏃",
+    "📚",
+    "🧘",
+    "🍎",
+    "☕",
+    "📈",
+]
+
+EN_TOKENS = [
+    "focus",
+    "workout",
+    "study",
+    "meeting",
+    "review",
+    "plan",
+]
+
+HASH_TAGS = [
+    "#健身",
+    "#work",
+    "#study",
+    "#family",
+    "#reading",
+]
+
+
+def apply_noise(text: str, noise_rate: float, emoji_rate: float) -> str:
+    t = text
+    if random.random() < noise_rate:
+        t = t + random.choice(["！", "～", "…", "。", "??", "?!"])
+    if random.random() < noise_rate:
+        t = t + " " + random.choice(EN_TOKENS)
+    if random.random() < noise_rate:
+        t = t + " " + random.choice(HASH_TAGS)
+    if random.random() < noise_rate:
+        t = t.replace(" ", "  ")
+    if random.random() < noise_rate:
+        if len(t) > 3:
+            i = random.randint(0, len(t) - 2)
+            t = t[:i] + t[i] + t[i:]
+    if random.random() < emoji_rate:
+        t = t + random.choice(EMOJIS)
+    return t
+
+
+def gen_samples(
+    count: int,
+    seed: int,
+    noise_rate: float,
+    emoji_rate: float,
+    freeform_rate: float,
+) -> pd.DataFrame:
+    random.seed(seed)
+    rows = []
+    for _ in range(count):
+        cat = random.choice(CATS)
+        phrase = random.choice(PHRASES[cat])
+        use_template = random.random() >= freeform_rate
+        if use_template:
+            base = random.choice(TEMPLATES).format(p=phrase)
+        else:
+            base = phrase
+        text = apply_noise(base, noise_rate, emoji_rate)
+        label = CATS.index(cat)
+        rows.append({"text": text, "label": label})
+    return pd.DataFrame(rows)
+
+
+def split_and_save(df: pd.DataFrame, out_dir: Path, seed: int) -> None:
+    y = df["label"]
+    train, tmp, y_train, y_tmp = train_test_split(
+        df, y, test_size=0.3, stratify=y, random_state=seed
+    )
+    val, test, _, _ = train_test_split(
+        tmp, y_tmp, test_size=1 / 3, stratify=y_tmp, random_state=seed
+    )
+    out_dir.mkdir(parents=True, exist_ok=True)
+    train.to_csv(out_dir / "train.csv", index=False)
+    val.to_csv(out_dir / "val.csv", index=False)
+    test.to_csv(out_dir / "test.csv", index=False)
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--count", type=int, default=30000)
+    parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--output_dir", default="data/processed")
+    parser.add_argument("--noise_rate", type=float, default=0.3)
+    parser.add_argument("--emoji_rate", type=float, default=0.25)
+    parser.add_argument("--freeform_rate", type=float, default=0.4)
+    args = parser.parse_args()
+    df = gen_samples(
+        args.count,
+        args.seed,
+        args.noise_rate,
+        args.emoji_rate,
+        args.freeform_rate,
+    )
+    split_and_save(df, Path(args.output_dir), args.seed)
+
+
+if __name__ == "__main__":
+    main()
