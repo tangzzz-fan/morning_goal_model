@@ -73,6 +73,7 @@ def main():
     parser.add_argument("--limit_eval", type=int, default=2000)
     args = parser.parse_args()
     torch.manual_seed(args.seed)
+    use_gpu = torch.cuda.is_available()
     train_df, val_df, test_df = read_csvs(args.data_dir)
     if args.limit_train and args.limit_train > 0:
         train_df = train_df.sample(
@@ -121,6 +122,8 @@ def main():
         greater_is_better=True,
         save_total_limit=2,
         seed=args.seed,
+        fp16=use_gpu,
+        gradient_accumulation_steps=1,
     )
     trainer = Trainer(
         model=model,
