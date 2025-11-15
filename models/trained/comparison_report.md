@@ -22,9 +22,22 @@
   - 验证：acc=0.9779167，f1=0.9770214，loss=0.0495366，eval_runtime=4.7461s，steps/s=90.39
   - 测试：acc=0.9770，f1=0.9761607，loss=0.0495703，eval_runtime=2.5448s，steps/s=84.487
 
+- Distill-Student（目录：`models/trained/distill_student`）
+  - 验证：acc=0.9750，f1=0.9747093，loss≈0.5013，eval_runtime≈1.61s
+  - 测试：acc=0.9785，f1=0.9788575，loss≈0.4976，eval_runtime≈1.77s
+
+- Distill-INT8（目录：`models/optimized/quant_int8_student`）
+  - 验证：acc=0.9776667，f1=0.9767863（与 FP32 持平）
+  - 测试：acc=0.9775，f1=0.9767043（与 FP32 持平）
+
+- Distill-Pruned 20%（目录：`models/optimized/pruned_student`）
+  - 验证：acc=0.9775833，f1=0.9767062（轻微下降）
+  - 测试：acc=0.9766667，f1=0.9758350（轻微下降）
+
 ## 结论
 - 吞吐提升显著（评估 `steps/s` 提升 ≈ 23.6×），时延大幅下降
 - 指标小幅提升（acc/f1 ≈ +0.1%），在含噪声与自由文本的场景下保持稳定
 
 ## 说明
 - 更大批次与更长轮次的 GPU 重训结果已输出至 `models/trained/bert_base_chinese_goals_gpu_long`；早停于第 3 轮，指标与 5 轮训练相当。
+- 新增蒸馏与压缩评测显示：INT8 基本不损失精度，剪枝 20% 精度损失可控。
