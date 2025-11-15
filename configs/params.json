@@ -1,0 +1,53 @@
+{
+  "data": {
+    "count": 60000,
+    "noise_rate": 0.35,
+    "emoji_rate": 0.25,
+    "freeform_rate": 0.5,
+    "output_dir": "data/processed"
+  },
+  "train": {
+    "data_dir": "data/processed",
+    "epochs": 5,
+    "batch_size": 24,
+    "max_length": 128,
+    "output_dir": "models/trained/bert_base_chinese_goals_gpu",
+    "limit_train": 42000,
+    "limit_eval": 12000,
+    "grad_accum": 2
+  },
+  "distill": {
+    "data_dir": "data/processed",
+    "teacher_name": "bert-base-chinese",
+    "student_name": "uer/chinese_roberta_L-4_H-512",
+    "epochs": 3,
+    "batch_size": 24,
+    "temperature": 3.0,
+    "alpha": 0.5,
+    "output_dir": "models/trained/distill_student",
+    "limit_train": 20000,
+    "limit_eval": 4000,
+    "grad_accum": 1
+  },
+  "quant": {
+    "model_dir": "models/trained/distill_student",
+    "data_dir": "data/processed",
+    "output_dir": "models/optimized/quant_int8_student",
+    "max_length": 128
+  },
+  "prune": {
+    "model_dir": "models/trained/distill_student",
+    "data_dir": "data/processed",
+    "output_dir": "models/optimized/pruned_student",
+    "amount": 0.2,
+    "max_length": 128
+  },
+  "onnx": {
+    "model_dir": "models/trained/distill_student",
+    "data_dir": "data/processed",
+    "output_dir": "models/onnx",
+    "opset": 14,
+    "max_length": 128,
+    "samples": 64
+  }
+}
