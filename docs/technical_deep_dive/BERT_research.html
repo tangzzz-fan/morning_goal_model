@@ -1,0 +1,2052 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BERT模型移动端部署与应用技术文档</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&amp;family=Inter:wght@300;400;500;600&amp;display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+        :root {
+            --primary: #1e1b4b;
+            --secondary: #3730a3;
+            --accent: #6366f1;
+            --neutral: #64748b;
+            --base-100: #f8fafc;
+            --base-200: #f1f5f9;
+            --base-300: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: #334155;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        }
+
+        .serif {
+            font-family: 'Lora', serif;
+        }
+
+        .hero-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .toc-fixed {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 280px;
+            height: 100vh;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid #e2e8f0;
+            z-index: 1000;
+            overflow-y: auto;
+            padding: 2rem 1.5rem;
+        }
+
+        .main-content {
+            margin-left: 280px;
+            min-height: 100vh;
+        }
+
+        .toc-link {
+            display: block;
+            padding: 0.5rem 0;
+            color: #64748b;
+            text-decoration: none;
+            border-left: 2px solid transparent;
+            padding-left: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .toc-link:hover,
+        .toc-link.active {
+            color: #6366f1;
+            border-left-color: #6366f1;
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .toc-link.sub {
+            padding-left: 2rem;
+            font-size: 0.875rem;
+        }
+
+        .section-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #e2e8f0, transparent);
+            margin: 3rem 0;
+        }
+
+        .citation {
+            color: #6366f1;
+            text-decoration: none;
+            font-weight: 500;
+            border-bottom: 1px dotted #6366f1;
+        }
+
+        .citation:hover {
+            background: rgba(99, 102, 241, 0.1);
+            padding: 0 2px;
+            border-radius: 2px;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.05), rgba(124, 58, 237, 0.05));
+            border-left: 4px solid #6366f1;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin: 2rem 0;
+        }
+
+        .bento-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .bento-item {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .hero-title {
+            font-size: 3.5rem;
+            line-height: 1.1;
+            font-style: italic;
+            background: linear-gradient(135deg, #1e1b4b, #6366f1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .mermaid-container {
+            display: flex;
+            justify-content: center;
+            min-height: 300px;
+            max-height: 800px;
+            background: #ffffff;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 30px;
+            margin: 30px 0;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mermaid-container .mermaid {
+            width: 100%;
+            max-width: 100%;
+            height: 100%;
+            cursor: grab;
+            transition: transform 0.3s ease;
+            transform-origin: center center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            touch-action: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        .mermaid-container .mermaid svg {
+            max-width: 100%;
+            height: 100%;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .mermaid-container .mermaid:active {
+            cursor: grabbing;
+        }
+
+        .mermaid-container.zoomed .mermaid {
+            height: 100%;
+            width: 100%;
+            cursor: grab;
+        }
+
+        .mermaid-controls {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            display: flex;
+            gap: 10px;
+            z-index: 20;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 8px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .mermaid-control-btn {
+            background: #ffffff;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #374151;
+            font-size: 14px;
+            min-width: 36px;
+            height: 36px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mermaid-control-btn:hover {
+            background: #f8fafc;
+            border-color: #3b82f6;
+            color: #3b82f6;
+            transform: translateY(-1px);
+        }
+
+        .mermaid-control-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Enhanced contrast for mermaid nodes with improved color scheme */
+        .mermaid .node rect,
+        .mermaid .node circle,
+        .mermaid .node ellipse,
+        .mermaid .node polygon {
+            stroke: var(--primary) !important;
+            stroke-width: 2px !important;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+        }
+
+        /* Different node colors with high contrast text */
+        .mermaid .node[style*="fill:#e0e7ff"] rect,
+        .mermaid .node[style*="fill:#e0e7ff"] polygon {
+            fill: #e0e7ff !important;
+            stroke: #6366f1 !important;
+        }
+
+        .mermaid .node[style*="fill:#e0e7ff"] .label {
+            color: #1e1b4b !important;
+            font-weight: 600 !important;
+            font-size: 13px !important;
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+        }
+
+        .mermaid .node[style*="fill:#dbeafe"] rect,
+        .mermaid .node[style*="fill:#dbeafe"] polygon {
+            fill: #dbeafe !important;
+            stroke: #3b82f6 !important;
+        }
+
+        .mermaid .node[style*="fill:#dbeafe"] .label {
+            color: #1e40af !important;
+            font-weight: 600 !important;
+            font-size: 13px !important;
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+        }
+
+        .mermaid .node[style*="fill:#fef3c7"] rect,
+        .mermaid .node[style*="fill:#fef3c7"] polygon {
+            fill: #fef3c7 !important;
+            stroke: #f59e0b !important;
+        }
+
+        .mermaid .node[style*="fill:#fef3c7"] .label {
+            color: #92400e !important;
+            font-weight: 600 !important;
+            font-size: 13px !important;
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+        }
+
+        .mermaid .node[style*="fill:#dcfce7"] rect,
+        .mermaid .node[style*="fill:#dcfce7"] polygon {
+            fill: #dcfce7 !important;
+            stroke: #22c55e !important;
+        }
+
+        .mermaid .node[style*="fill:#dcfce7"] .label {
+            color: #166534 !important;
+            font-weight: 600 !important;
+            font-size: 13px !important;
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+        }
+
+        /* Default node styling */
+        .mermaid .node .label {
+            color: #1e293b !important;
+            font-weight: 600 !important;
+            font-size: 13px !important;
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+        }
+
+        .mermaid .edgePath .path {
+            stroke: var(--neutral) !important;
+            stroke-width: 2px !important;
+            filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+        }
+
+        .mermaid .edgeLabel {
+            background-color: rgba(255, 255, 255, 0.95) !important;
+            color: var(--primary) !important;
+            font-weight: 600 !important;
+            border: 1px solid #e2e8f0 !important;
+            border-radius: 4px !important;
+            padding: 2px 6px !important;
+            font-size: 12px !important;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+        }
+
+        .mermaid .marker {
+            fill: var(--neutral) !important;
+            stroke: var(--neutral) !important;
+        }
+
+        /* Ensure text readability on all backgrounds */
+        .mermaid text {
+            font-family: 'Inter', sans-serif !important;
+            font-weight: 500 !important;
+        }
+
+        @media (max-width: 1024px) {
+            .toc-fixed {
+                display: none;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .bento-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-title {
+                font-size: 2.5rem;
+            }
+        }
+
+        /* Responsive adjustments for small screens */
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2rem;
+            }
+
+            .bento-item {
+                padding: 1rem;
+            }
+
+            .bento-item img {
+                height: auto;
+                max-height: 200px;
+            }
+
+            .hero-gradient {
+                padding: 1rem;
+            }
+
+            .main-content section {
+                padding: 1rem;
+            }
+        }
+
+        /* Additional adjustments for very small screens */
+        @media (max-width: 480px) {
+            .hero-title {
+                font-size: 1.75rem;
+            }
+
+            .bento-item,
+            .hero-gradient,
+            .main-content section {
+                padding: 0.5rem;
+            }
+
+            .bento-item img {
+                height: auto;
+                max-height: 150px;
+            }
+        }
+
+        /* Prevent horizontal overflow */
+        body {
+            overflow-x: hidden;
+        }
+    </style>
+    <base target="_blank">
+</head>
+
+<body>
+    <!-- Table of Contents -->
+    <nav class="toc-fixed">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4 serif">目录</h3>
+        <a href="#introduction" class="toc-link">引言</a>
+        <a href="#bert-optimization" class="toc-link">1. BERT模型优化与适配</a>
+        <a href="#pruning-distillation" class="toc-link sub">1.1 剪枝与蒸馏</a>
+        <a href="#quantization" class="toc-link sub">1.2 量化技术</a>
+        <a href="#mobilebert" class="toc-link sub">1.3 MobileBERT架构</a>
+        <a href="#format-conversion" class="toc-link sub">1.4 格式转换</a>
+        <a href="#coreml-pipeline" class="toc-link sub">1.5 Core ML Pipeline</a>
+        <a href="#architecture-design" class="toc-link sub">1.6 架构设计</a>
+        <a href="#user-text-analysis" class="toc-link">2. 用户文本分析</a>
+        <a href="#scenario-analysis" class="toc-link sub">2.1 场景分析</a>
+        <a href="#model-selection" class="toc-link sub">2.2 模型选择</a>
+        <a href="#mobile-architecture" class="toc-link sub">2.3 移动端架构</a>
+        <a href="#insights-generation" class="toc-link sub">2.4 洞察生成</a>
+        <a href="#federated-learning" class="toc-link">3. 端云协同</a>
+        <a href="#hybrid-architecture" class="toc-link sub">3.1 混合架构</a>
+        <a href="#on-device-training" class="toc-link sub">3.2 端侧训练</a>
+        <a href="#privacy-protection" class="toc-link sub">3.3 隐私保护</a>
+        <a href="#cloud-collaboration" class="toc-link sub">3.4 云端协同</a>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Hero Section -->
+        <section class="hero-gradient text-white relative overflow-hidden">
+            <div class="absolute inset-0 bg-black bg-opacity-20"></div>
+            <div class="relative z-10 p-8">
+                <div class="bento-grid">
+                    <div
+                        class="bento-item bg-white bg-opacity-10 backdrop-blur-sm border border-white border-opacity-20">
+                        <h1 class="hero-title serif mb-6">
+                            BERT模型移动端部署与应用
+                        </h1>
+                        <p class="text-xl mb-4 opacity-90">
+                            从云端到边缘：大型语言模型的轻量化革命
+                        </p>
+                        <div class="flex items-center space-x-4 text-sm opacity-80">
+                            <span><i class="fas fa-mobile-alt mr-2"></i>移动端优化</span>
+                            <span><i class="fas fa-shield-alt mr-2"></i>隐私保护</span>
+                            <span><i class="fas fa-brain mr-2"></i>边缘智能</span>
+                        </div>
+                    </div>
+                    <div
+                        class="bento-item bg-white bg-opacity-10 backdrop-blur-sm border border-white border-opacity-20">
+                        <img src="https://kimi-web-img.moonshot.cn/img/www.chinagp.net/30111ab159b944e45cc7485d807827d48e9e77df.png"
+                            alt="移动设备上的神经网络模型示意图" class="w-full h-48 object-cover rounded-lg mb-4" size="medium"
+                            aspect="wide" query="移动端神经网络模型" referrerpolicy="no-referrer" data-modified="1"
+                            data-score="0.00" />
+                        <h3 class="text-lg font-semibold mb-2">核心技术路径</h3>
+                        <ul class="text-sm space-y-1 opacity-90">
+                            <li>• 模型压缩与优化</li>
+                            <li>• 格式转换与适配</li>
+                            <li>• 端侧架构设计</li>
+                            <li>• 隐私保护机制</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Introduction -->
+        <section id="introduction" class="p-8 max-w-6xl mx-auto">
+            <div class="highlight-box">
+                <h2 class="text-2xl font-semibold mb-4 serif">核心概述</h2>
+                <p class="text-lg leading-relaxed">
+                    将大型BERT模型（如<code
+                        class="bg-gray-100 px-2 py-1 rounded">bert_base_chinese</code>）成功部署到移动端，需要经过一系列系统性的优化和适配流程。核心步骤包括：<strong>1)
+                        模型优化</strong>，通过剪枝、知识蒸馏、量化等技术，将模型压缩为轻量级的变体（如MobileBERT），以减小体积、降低计算量；<strong>2) 格式转换</strong>，使用
+                    <code class="bg-gray-100 px-2 py-1 rounded">coremltools</code>或
+                    <code class="bg-gray-100 px-2 py-1 rounded">tf2onnx</code>等工具，将优化后的模型转换为移动端支持的格式（如Core
+                    ML或ONNX）；<strong>3)
+                        移动端架构设计</strong>，采用&#34;基座+可更新（Updatable）&#34;的架构，将通用模型与个性化模块分离，实现模型的快速迭代和设备端训练；<strong>4)
+                        场景应用</strong>，将模型应用于用户文本分析等具体场景，通过本地推理保护用户隐私，并结合云端大模型处理复杂任务，实现性能与隐私的平衡。
+                </p>
+            </div>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- Section 1: BERT模型移动端适配与优化 -->
+        <section id="bert-optimization" class="p-8 max-w-6xl mx-auto">
+            <h1 class="text-4xl font-bold mb-8 serif">1. BERT模型移动端适配与优化指南</h1>
+
+            <p class="text-lg mb-6 leading-relaxed">
+                将BERT（Bidirectional Encoder Representations from
+                Transformers）这类大型预训练语言模型部署到资源受限的移动端设备上，面临着模型体积庞大、计算复杂度高、内存占用大以及功耗高等多重挑战。原始的BERT模型通常包含数亿个参数，使其难以在智能手机等边缘设备上实现实时推理<a
+                    href="https://www.zhihu.com/question/395741105"
+                    class="citation">[194]</a>。为了解决这些问题，研究人员和工程师们开发了一系列模型压缩与优化技术，旨在显著减小模型尺寸、提升推理速度，同时尽可能保持模型的性能。
+            </p>
+
+            <div class="chart-container">
+                <h3 class="text-xl font-semibold mb-4">模型优化技术概览</h3>
+                <div class="mermaid-container">
+                    <div class="mermaid-controls">
+                        <button class="mermaid-control-btn zoom-in" title="放大">
+                            <i class="fas fa-search-plus"></i>
+                        </button>
+                        <button class="mermaid-control-btn zoom-out" title="缩小">
+                            <i class="fas fa-search-minus"></i>
+                        </button>
+                        <button class="mermaid-control-btn reset-zoom" title="重置">
+                            <i class="fas fa-expand-arrows-alt"></i>
+                        </button>
+                        <button class="mermaid-control-btn fullscreen" title="全屏查看">
+                            <i class="fas fa-expand"></i>
+                        </button>
+                    </div>
+                    <div class="mermaid">
+                        graph TD
+                        A[&#34;原始BERT模型
+                        <br />110M参数&#34;] --&gt; B[&#34;模型优化&#34;]
+                        B --&gt; C[&#34;剪枝 Pruning
+                        <br />移除冗余参数&#34;]
+                        B --&gt; D[&#34;知识蒸馏
+                        <br />Knowledge Distillation&#34;]
+                        B --&gt; E[&#34;量化 Quantization
+                        <br />降低数值精度&#34;]
+                        B --&gt; F[&#34;轻量化架构
+                        <br />MobileBERT&#34;]
+
+                        C --&gt; G[&#34;优化后模型
+                        <br />25M参数&#34;]
+                        D --&gt; G
+                        E --&gt; G
+                        F --&gt; G
+
+                        G --&gt; H[&#34;格式转换&#34;]
+                        H --&gt; I[&#34;ONNX格式&#34;]
+                        H --&gt; J[&#34;Core ML格式&#34;]
+
+                        I --&gt; K[&#34;移动端部署&#34;]
+                        J --&gt; K
+
+                        K --&gt; L[&#34;设备端推理
+                        <br />实时响应&#34;]
+
+                        style A fill:#e0e7ff,stroke:#6366f1,stroke-width:2px,color:#1e1b4b
+                        style B fill:#fef3c7,stroke:#f59e0b,stroke-width:2px,color:#92400e
+                        style G fill:#dcfce7,stroke:#22c55e,stroke-width:2px,color:#166534
+                        style K fill:#dbeafe,stroke:#3b82f6,stroke-width:2px,color:#1e40af
+                        style L fill:#f3e8ff,stroke:#8b5cf6,stroke-width:2px,color:#6b21a8
+                        style C fill:#f8fafc,stroke:#64748b,stroke-width:1px,color:#334155
+                        style D fill:#f8fafc,stroke:#64748b,stroke-width:1px,color:#334155
+                        style E fill:#f8fafc,stroke:#64748b,stroke-width:1px,color:#334155
+                        style F fill:#f8fafc,stroke:#64748b,stroke-width:1px,color:#334155
+                        style H fill:#f1f5f9,stroke:#94a3b8,stroke-width:1px,color:#334155
+                        style I fill:#f1f5f9,stroke:#94a3b8,stroke-width:1px,color:#334155
+                        style J fill:#f1f5f9,stroke:#94a3b8,stroke-width:1px,color:#334155
+                    </div>
+                </div>
+            </div>
+
+            <!-- Subsection 1.1: Model Optimization -->
+            <div id="pruning-distillation" class="mb-12">
+                <h2 class="text-2xl font-semibold mb-6 serif">1.1. BERT模型的裁剪与优化</h2>
+
+                <div class="grid md:grid-cols-2 gap-8 mb-8">
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-xl font-semibold mb-4 text-indigo-600">
+                            <i class="fas fa-cut mr-2"></i>模型剪枝 (Pruning)
+                        </h3>
+                        <p class="mb-4">
+                            模型剪枝是一种通过移除神经网络中冗余或不重要的参数来减小模型大小和计算量的技术。其核心思想是，大型神经网络在训练后，许多连接（权重）的值接近于零，这些连接对最终的输出贡献很小，可以被安全地移除而不会显著影响模型的性能。
+                        </p>
+                        <div class="bg-indigo-50 p-4 rounded-lg">
+                            <strong>剪枝类型：</strong>
+                            <ul class="list-disc list-inside mt-2 space-y-1 text-sm">
+                                <li><strong>非结构化剪枝</strong>：移除任意位置的单个权重</li>
+                                <li><strong>结构化剪枝</strong>：移除整个结构单元，如通道、滤波器或神经元</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-xl font-semibold mb-4 text-purple-600">
+                            <i class="fas fa-graduation-cap mr-2"></i>知识蒸馏 (Knowledge Distillation)
+                        </h3>
+                        <p class="mb-4">
+                            知识蒸馏是一种强大的模型压缩技术，其核心思想是将一个大型、复杂的&#34;教师模型&#34;所学习到的&#34;知识&#34;迁移到一个更小、更轻量的&#34;学生模型&#34;中<a
+                                href="https://cloud.baidu.com/article/1803122" class="citation">[222]</a>。
+                        </p>
+                        <div class="bg-purple-50 p-4 rounded-lg">
+                            <strong>DistilBERT成果：</strong>
+                            <p class="mt-2 text-sm">
+                                通过知识蒸馏将BERT模型的参数量减少了40%，同时保留了97%的性能，推理速度提升了60%<a
+                                    href="https://blog.moontak.com/id/79079/" class="citation">[211]</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="highlight-box">
+                    <h4 class="text-lg font-semibold mb-3">量化技术效果</h4>
+                    <p class="mb-4">
+                        量化是一种通过降低模型中数值表示的精度来减小模型大小和加速计算的技术。将TinyBERT模型从FP32量化为FP16后，模型大小从44MB降至22MB，推理性能在华为麒麟810芯片上提升近一倍<a
+                            href="https://aijishu.com/a/1060000000126084" class="citation">[218]</a>。
+                    </p>
+                </div>
+            </div>
+
+            <!-- MobileBERT Architecture -->
+            <div id="mobilebert" class="mb-12">
+                <h2 class="text-2xl font-semibold mb-6 serif">1.2. 轻量化架构：MobileBERT</h2>
+
+                <p class="mb-6">
+                    MobileBERT是专门为资源受限的移动和边缘设备设计的轻量化BERT模型<a
+                        href="https://blog.csdn.net/yjw123456/article/details/133983860"
+                        class="citation">[191]</a>。它并非简单地对BERT进行剪枝或量化，而是从架构层面进行了重新设计，以实现更高的压缩比和更快的推理速度。
+                </p>
+
+                <div class="bg-white rounded-lg shadow-md overflow-hidden mb-8">
+                    <div class="bg-indigo-600 text-white p-4">
+                        <h3 class="text-xl font-semibold">MobileBERT架构创新</h3>
+                    </div>
+                    <div class="p-6">
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <h4 class="font-semibold mb-3 text-indigo-600">核心设计思想</h4>
+                                <ul class="space-y-2 text-sm">
+                                    <li><strong>&#34;深而窄&#34;结构</strong>：保持Transformer层数不变，显著减小隐藏层维度</li>
+                                    <li><strong>倒置瓶颈结构</strong>：隐藏层输入输出维度较大，中间维度较小</li>
+                                    <li><strong>FFN模块优化</strong>：每个MHA模块后堆叠4个FFN模块</li>
+                                    <li><strong>操作层面优化</strong>：用ReLU替代GELU，矩阵分解减少参数</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <img src="https://kimi-web-img.moonshot.cn/imagegen/20251116/021763267386473b97f6b8ab26d0f1fb0c6e11a1c6580eed06606_0.jpeg"
+                                    alt="MobileBERT神经网络架构示意图" class="w-full h-48 object-cover rounded-lg" size="medium"
+                                    aspect="wide" style="linedrawing" query="MobileBERT模型架构"
+                                    referrerpolicy="no-referrer" data-modified="1" data-score="0.00" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div class="bg-gray-50 p-4 border-b">
+                        <h3 class="text-xl font-semibold">BERT系列模型架构与性能对比</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-4 py-3 text-left font-semibold">模型</th>
+                                    <th class="px-4 py-3 text-left font-semibold">层数 (L)</th>
+                                    <th class="px-4 py-3 text-left font-semibold">隐藏层维度 (H)</th>
+                                    <th class="px-4 py-3 text-left font-semibold">注意力头数 (A)</th>
+                                    <th class="px-4 py-3 text-left font-semibold">参数量 (M)</th>
+                                    <th class="px-4 py-3 text-left font-semibold">相对速度</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200">
+                                <tr>
+                                    <td class="px-4 py-3 font-semibold">BERT-base</td>
+                                    <td class="px-4 py-3">12</td>
+                                    <td class="px-4 py-3">768</td>
+                                    <td class="px-4 py-3">12</td>
+                                    <td class="px-4 py-3">110</td>
+                                    <td class="px-4 py-3">1x</td>
+                                </tr>
+                                <tr class="bg-indigo-50">
+                                    <td class="px-4 py-3 font-semibold text-indigo-600">MobileBERT</td>
+                                    <td class="px-4 py-3">24</td>
+                                    <td class="px-4 py-3">512 (输入/输出)
+                                        <br />128 (内部)
+                                    </td>
+                                    <td class="px-4 py-3">4</td>
+                                    <td class="px-4 py-3">25</td>
+                                    <td class="px-4 py-3 font-semibold text-green-600">~4.3x 更快<a
+                                            href="https://www.zhihu.com/question/395741105" class="citation">[194]</a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Format Conversion -->
+            <div id="format-conversion" class="mb-12">
+                <h2 class="text-2xl font-semibold mb-6 serif">1.3. BERT模型的移动端格式转换</h2>
+
+                <div class="grid md:grid-cols-2 gap-8 mb-8">
+                    <div class="bg-blue-50 p-6 rounded-lg">
+                        <h3 class="text-xl font-semibold mb-4 text-blue-600">
+                            <i class="fas fa-exchange-alt mr-2"></i>转换为ONNX格式
+                        </h3>
+                        <p class="mb-4">
+                            ONNX（Open Neural Network Exchange）作为一个开放的生态系统，旨在使AI开发者能够使用不同框架创建的模型，并在各种平台和设备上运行。
+                        </p>
+                        <div class="bg-white p-4 rounded-lg">
+                            <strong>转换步骤：</strong>
+                            <ol class="list-decimal list-inside mt-2 space-y-1 text-sm">
+                                <li>加载预训练的BERT模型</li>
+                                <li>创建包装器类确保输出符合预期</li>
+                                <li>提供示例输入进行模型追踪</li>
+                                <li>使用
+                                    <code>torch.onnx.export()</code>导出
+                                </li>
+                                <li>验证和优化ONNX模型</li>
+                            </ol>
+                        </div>
+                    </div>
+
+                    <div class="bg-green-50 p-6 rounded-lg">
+                        <h3 class="text-xl font-semibold mb-4 text-green-600">
+                            <i class="fab fa-apple mr-2"></i>转换为Core ML格式
+                        </h3>
+                        <p class="mb-4">
+                            对于在Apple生态系统中部署BERT模型，将其转换为Core ML格式是最佳选择。Core ML能够充分利用Apple设备的硬件加速能力。
+                        </p>
+                        <div class="bg-white p-4 rounded-lg">
+                            <strong>转换工具：</strong>
+                            <div class="mt-2">
+                                <code class="bg-gray-100 px-2 py-1 rounded text-sm">coremltools</code> Python库
+                                <ul class="list-disc list-inside mt-2 space-y-1 text-sm">
+                                    <li>支持PyTorch和TensorFlow模型</li>
+                                    <li>提供量化优化选项</li>
+                                    <li>支持模型动态更新</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="highlight-box">
+                    <h4 class="text-lg font-semibold mb-3">转换中的关键问题</h4>
+                    <p class="mb-4">
+                        在将BERT模型转换为移动端格式时，一个关键且容易被忽视的问题是输入数据的处理，特别是序列分割（Tokenization）和Segment ID的生成<a
+                            href="https://github.com/Akruzen/Briefer" class="citation">[204]</a>。
+                    </p>
+                    <div class="grid md:grid-cols-3 gap-4 mt-4">
+                        <div class="bg-white p-4 rounded-lg">
+                            <strong>Tokenization</strong>
+                            <p class="text-sm mt-1">将文本分割成子词并映射到词汇表ID</p>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg">
+                            <strong>Segment IDs</strong>
+                            <p class="text-sm mt-1">区分不同句子，单句输入全为0</p>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg">
+                            <strong>Attention Mask</strong>
+                            <p class="text-sm mt-1">指示真实词元和填充位置</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Core ML Pipeline -->
+            <div id="coreml-pipeline" class="mb-12">
+                <h2 class="text-2xl font-semibold mb-6 serif">1.4. Core ML Pipeline的设计与优势</h2>
+
+                <p class="mb-6">
+                    Core ML
+                    Pipeline是Apple提供的一种高级API，旨在简化和优化在iOS、macOS等平台上部署复杂机器学习模型的流程。它允许开发者将多个模型或预处理/后处理步骤链接在一起，形成一个端到端的处理管道。
+                </p>
+
+                <div class="chart-container">
+                    <h3 class="text-xl font-semibold mb-4">Core ML Pipeline架构</h3>
+                    <div class="mermaid-container">
+                        <div class="mermaid-controls">
+                            <button class="mermaid-control-btn zoom-in" title="放大">
+                                <i class="fas fa-search-plus"></i>
+                            </button>
+                            <button class="mermaid-control-btn zoom-out" title="缩小">
+                                <i class="fas fa-search-minus"></i>
+                            </button>
+                            <button class="mermaid-control-btn reset-zoom" title="重置">
+                                <i class="fas fa-expand-arrows-alt"></i>
+                            </button>
+                            <button class="mermaid-control-btn fullscreen" title="全屏查看">
+                                <i class="fas fa-expand"></i>
+                            </button>
+                        </div>
+                        <div class="mermaid">
+                            graph LR
+                            A[&#34;原始输入数据&#34;] --&gt; B[&#34;预处理阶段&#34;]
+                            B --&gt; C[&#34;Core ML Pipeline&#34;]
+                            C --&gt; D[&#34;后处理阶段&#34;]
+                            D --&gt; E[&#34;最终结果&#34;]
+
+                            C --&gt; F[&#34;模型1: 特征提取&#34;]
+                            C --&gt; G[&#34;模型2: 主处理&#34;]
+                            C --&gt; H[&#34;模型3: 结果优化&#34;]
+
+                            F --&gt; I[&#34;CPU处理&#34;]
+                            G --&gt; J[&#34;GPU加速&#34;]
+                            H --&gt; K[&#34;Neural Engine&#34;]
+
+                            style A fill:#e0e7ff,stroke:#6366f1,stroke-width:2px,color:#1e1b4b
+                            style E fill:#dcfce7,stroke:#22c55e,stroke-width:2px,color:#166534
+                            style C fill:#fef3c7,stroke:#f59e0b,stroke-width:2px,color:#92400e
+                            style B fill:#f1f5f9,stroke:#94a3b8,stroke-width:1px,color:#334155
+                            style D fill:#f1f5f9,stroke:#94a3b8,stroke-width:1px,color:#334155
+                            style F fill:#dbeafe,stroke:#3b82f6,stroke-width:2px,color:#1e40af
+                            style G fill:#dbeafe,stroke:#3b82f6,stroke-width:2px,color:#1e40af
+                            style H fill:#dbeafe,stroke:#3b82f6,stroke-width:2px,color:#1e40af
+                            style I fill:#f8fafc,stroke:#64748b,stroke-width:1px,color:#334155
+                            style J fill:#f8fafc,stroke:#64748b,stroke-width:1px,color:#334155
+                            style K fill:#f8fafc,stroke:#64748b,stroke-width:1px,color:#334155
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid md:grid-cols-3 gap-6 mt-8">
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <div class="text-blue-600 text-2xl mb-3">
+                            <i class="fas fa-tachometer-alt"></i>
+                        </div>
+                        <h4 class="font-semibold mb-2">性能优化</h4>
+                        <p class="text-sm">智能分配计算任务到CPU、GPU、Neural Engine，最大限度减少内存拷贝和数据格式转换开销</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <div class="text-green-600 text-2xl mb-3">
+                            <i class="fas fa-user-shield"></i>
+                        </div>
+                        <h4 class="font-semibold mb-2">隐私保护</h4>
+                        <p class="text-sm">所有计算都在设备本地完成，数据无需上传到云端，符合GDPR等数据隐私法规<a
+                                href="https://medium.com/@fahey_james/implementing-ai-models-on-mobile-devices-a-look-at-storage-computation-and-data-flow-6f8656e5cf1a"
+                                class="citation">[177]</a>
+                        </p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <div class="text-purple-600 text-2xl mb-3">
+                            <i class="fas fa-code"></i>
+                        </div>
+                        <h4 class="font-semibold mb-2">易用性</h4>
+                        <p class="text-sm">提供简洁高级的API，开发者无需深入了解底层硬件架构或编写复杂的并发代码</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Architecture Design -->
+            <div id="architecture-design" class="mb-12">
+                <h2 class="text-2xl font-semibold mb-6 serif">1.5. 移动端模型架构设计：基座 + Updatable</h2>
+
+                <p class="mb-6">
+                    为了在移动端实现灵活、高效且可迭代的AI功能，一种先进的架构设计模式是&#34;基座 + Updatable&#34;（Base +
+                    Updatable）。这种架构将一个相对稳定的、通用的&#34;基座模型&#34;与一个轻量级的、可以快速更新的&#34;可更新模块&#34;相结合。
+                </p>
+
+                <div class="bg-white rounded-lg shadow-md overflow-hidden mb-8">
+                    <div class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-6">
+                        <h3 class="text-xl font-semibold mb-2">基座 + Updatable 架构示意图</h3>
+                    </div>
+                    <div class="p-6">
+                        <div class="grid md:grid-cols-2 gap-8">
+                            <div>
+                                <h4 class="font-semibold mb-4 text-indigo-600">基座模型 (Base Model)</h4>
+                                <div class="space-y-3">
+                                    <div class="bg-indigo-50 p-3 rounded-lg">
+                                        <strong>角色：</strong>特征提取器
+                                    </div>
+                                    <div class="bg-indigo-50 p-3 rounded-lg">
+                                        <strong>特点：</strong>大型、稳定、通用
+                                    </div>
+                                    <div class="bg-indigo-50 p-3 rounded-lg">
+                                        <strong>功能：</strong>将原始文本转换为高维语义向量
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold mb-4 text-purple-600">Updatable模块</h4>
+                                <div class="space-y-3">
+                                    <div class="bg-purple-50 p-3 rounded-lg">
+                                        <strong>角色：</strong>任务执行器
+                                    </div>
+                                    <div class="bg-purple-50 p-3 rounded-lg">
+                                        <strong>特点：</strong>小型、灵活、可更新
+                                    </div>
+                                    <div class="bg-purple-50 p-3 rounded-lg">
+                                        <strong>功能：</strong>根据特定任务输出最终结果
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-8 flex items-center justify-center">
+                            <img src="https://kimi-web-img.moonshot.cn/img/xingongye.cn/6975c0974f05bf9f5a75f486b2f119c83e94f9c8.png"
+                                alt="基座模型与可更新模块交互的示意图" class="w-full max-w-2xl h-64 object-contain" size="medium"
+                                aspect="wide" query="基座模型与可更新模块架构图" referrerpolicy="no-referrer" data-modified="1"
+                                data-score="0.00" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="highlight-box">
+                    <h4 class="text-lg font-semibold mb-3">架构优势</h4>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <h5 class="font-semibold mb-2 text-green-600">增量更新</h5>
+                            <p class="text-sm mb-4">只需更新轻量级的Updatable模块，无需重新下载整个大型模型，节省带宽和存储空间</p>
+
+                            <h5 class="font-semibold mb-2 text-blue-600">快速迭代</h5>
+                            <p class="text-sm">模型迭代速度大大加快，无需等待数周的App Store审核周期</p>
+                        </div>
+                        <div>
+                            <h5 class="font-semibold mb-2 text-purple-600">个性化适配</h5>
+                            <p class="text-sm mb-4">可以在用户设备上对Updatable模块进行本地微调，适应每个用户的独特习惯和需求</p>
+
+                            <h5 class="font-semibold mb-2 text-red-600">隐私保护</h5>
+                            <p class="text-sm">本地训练确保用户原始数据不会离开设备，从根本上杜绝数据泄露风险</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- Section 2: User Text Analysis -->
+        <section id="user-text-analysis" class="p-8 max-w-6xl mx-auto">
+            <h1 class="text-4xl font-bold mb-8 serif">2. 场景应用一：移动端用户文本分析与洞察</h1>
+
+            <p class="text-lg mb-6 leading-relaxed">
+                在移动应用中，理解用户是提升产品体验和实现个性化服务的关键。通过分析用户在应用内产生的文本数据，如评论、反馈、搜索关键词、聊天记录等，可以深入洞察用户的行为模式、情感倾向、兴趣偏好以及潜在痛点。然而，将这些包含大量个人信息的敏感数据上传到云端进行处理，不仅存在严重的隐私泄露风险，也可能因网络延迟影响用户体验。
+            </p>
+
+            <div class="chart-container">
+                <h3 class="text-xl font-semibold mb-4">用户文本分析处理流程</h3>
+                <div class="mermaid-container">
+                    <div class="mermaid-controls">
+                        <button class="mermaid-control-btn zoom-in" title="放大">
+                            <i class="fas fa-search-plus"></i>
+                        </button>
+                        <button class="mermaid-control-btn zoom-out" title="缩小">
+                            <i class="fas fa-search-minus"></i>
+                        </button>
+                        <button class="mermaid-control-btn reset-zoom" title="重置">
+                            <i class="fas fa-expand-arrows-alt"></i>
+                        </button>
+                        <button class="mermaid-control-btn fullscreen" title="全屏查看">
+                            <i class="fas fa-expand"></i>
+                        </button>
+                    </div>
+                    <div class="mermaid">
+                        graph TB
+                        A[&#34;用户文本输入&#34;] --&gt; B[&#34;数据预处理&#34;]
+                        B --&gt; C[&#34;Tokenization&#34;]
+                        B --&gt; D[&#34;序列分割&#34;]
+                        B --&gt; E[&#34;特征生成&#34;]
+
+                        C --&gt; F[&#34;Core ML模型推理&#34;]
+                        D --&gt; F
+                        E --&gt; F
+
+                        F --&gt; G[&#34;结果解析&#34;]
+                        G --&gt; H[&#34;情感分析&#34;]
+                        G --&gt; I[&#34;主题提取&#34;]
+                        G --&gt; J[&#34;关键词识别&#34;]
+
+                        H --&gt; K[&#34;用户洞察生成&#34;]
+                        I --&gt; K
+                        J --&gt; K
+
+                        K --&gt; L[&#34;个性化推荐&#34;]
+                        K --&gt; M[&#34;产品改进建议&#34;]
+                        K --&gt; N[&#34;用户行为分析&#34;]
+
+                        style A fill:#e0e7ff,stroke:#6366f1,stroke-width:2px,color:#1e1b4b
+                        style F fill:#fef3c7,stroke:#f59e0b,stroke-width:2px,color:#92400e
+                        style K fill:#dcfce7,stroke:#22c55e,stroke-width:2px,color:#166534
+                        style L fill:#dbeafe,stroke:#3b82f6,stroke-width:2px,color:#1e40af
+                        style M fill:#dbeafe,stroke:#3b82f6,stroke-width:2px,color:#1e40af
+                        style N fill:#dbeafe,stroke:#3b82f6,stroke-width:2px,color:#1e40af
+                        style B fill:#f1f5f9,stroke:#94a3b8,stroke-width:1px,color:#334155
+                        style C fill:#f8fafc,stroke:#64748b,stroke-width:1px,color:#334155
+                        style D fill:#f8fafc,stroke:#64748b,stroke-width:1px,color:#334155
+                        style E fill:#f8fafc,stroke:#64748b,stroke-width:1px,color:#334155
+                        style G fill:#f1f5f9,stroke:#94a3b8,stroke-width:1px,color:#334155
+                        style H fill:#f8fafc,stroke:#64748b,stroke-width:1px,color:#334155
+                        style I fill:#f8fafc,stroke:#64748b,stroke-width:1px,color:#334155
+                        style J fill:#f8fafc,stroke:#64748b,stroke-width:1px,color:#334155
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scenario Analysis -->
+            <div id="scenario-analysis" class="mb-12">
+                <h2 class="text-2xl font-semibold mb-6 serif">2.1. 场景描述与目标</h2>
+
+                <div class="grid md:grid-cols-2 gap-8 mb-8">
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-xl font-semibold mb-4 text-blue-600">
+                            <i class="fas fa-comment-alt mr-2"></i>应用场景
+                        </h3>
+                        <div class="space-y-4">
+                            <div class="border-l-4 border-blue-500 pl-4">
+                                <h4 class="font-semibold">用户评论与反馈分析</h4>
+                                <p class="text-sm text-gray-600">实时分析评论情感极性，识别具体功能点或问题</p>
+                            </div>
+                            <div class="border-l-4 border-green-500 pl-4">
+                                <h4 class="font-semibold">搜索关键词分析</h4>
+                                <p class="text-sm text-gray-600">了解用户核心需求和兴趣点，发现热门商品趋势</p>
+                            </div>
+                            <div class="border-l-4 border-purple-500 pl-4">
+                                <h4 class="font-semibold">聊天记录分析</h4>
+                                <p class="text-sm text-gray-600">识别热门话题、社区氛围，辅助内容审核</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-xl font-semibold mb-4 text-green-600">
+                            <i class="fas fa-bullseye mr-2"></i>应用目标
+                        </h3>
+                        <div class="space-y-4">
+                            <div class="bg-green-50 p-4 rounded-lg">
+                                <h4 class="font-semibold mb-2">用户层面：个性化洞察</h4>
+                                <ul class="text-sm space-y-1">
+                                    <li>• 推荐感兴趣的功能或内容</li>
+                                    <li>• 主动识别用户困难并提供帮助</li>
+                                    <li>• 提升用户体验，增强用户粘性</li>
+                                </ul>
+                            </div>
+                            <div class="bg-blue-50 p-4 rounded-lg">
+                                <h4 class="font-semibold mb-2">产品层面：改进建议</h4>
+                                <ul class="text-sm space-y-1">
+                                    <li>• 量化评估功能受欢迎程度</li>
+                                    <li>• 识别用户普遍抱怨的痛点</li>
+                                    <li>• 发现新的产品机会</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Model Selection -->
+            <div id="model-selection" class="mb-12">
+                <h2 class="text-2xl font-semibold mb-6 serif">2.2. 模型选择与优化</h2>
+
+                <div class="bg-white rounded-lg shadow-md overflow-hidden mb-8">
+                    <div class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4">
+                        <h3 class="text-xl font-semibold">轻量化BERT模型选择</h3>
+                    </div>
+                    <div class="p-6">
+                        <div class="grid md:grid-cols-3 gap-6">
+                            <div class="text-center">
+                                <div
+                                    class="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <i class="fas fa-compress-alt text-blue-600 text-2xl"></i>
+                                </div>
+                                <h4 class="font-semibold mb-2">体积小巧</h4>
+                                <p class="text-sm text-gray-600">经过量化后，模型大小控制在几十兆字节以内，方便集成到移动应用中</p>
+                            </div>
+                            <div class="text-center">
+                                <div
+                                    class="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <i class="fas fa-bolt text-green-600 text-2xl"></i>
+                                </div>
+                                <h4 class="font-semibold mb-2">推理高效</h4>
+                                <p class="text-sm text-gray-600">优化的架构和对移动端硬件的良好支持，实现实时推理速度</p>
+                            </div>
+                            <div class="text-center">
+                                <div
+                                    class="bg-purple-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <i class="fas fa-language text-purple-600 text-2xl"></i>
+                                </div>
+                                <h4 class="font-semibold mb-2">中文适配</h4>
+                                <p class="text-sm text-gray-600">对中文语言特性有深入理解，准确处理中文分词、语义和语法结构</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="highlight-box">
+                    <h4 class="text-lg font-semibold mb-3">模型微调策略</h4>
+                    <p class="mb-4">
+                        虽然
+                        <code
+                            class="bg-gray-100 px-2 py-1 rounded">mobile_bert_base_chinese</code>等预训练模型已经具备强大的通用语言理解能力，但为了使其在特定的分析任务上表现更佳，进行针对性的微调（Fine-tuning）是必要的。
+                    </p>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="bg-white p-4 rounded-lg">
+                            <h5 class="font-semibold mb-2 text-blue-600">数据准备</h5>
+                            <ul class="text-sm space-y-1">
+                                <li>• 收集与应用场景相关的标注数据集</li>
+                                <li>• 包含正面、负面、中性评论的情感分析数据集</li>
+                                <li>• 确保数据质量和标注准确性</li>
+                            </ul>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg">
+                            <h5 class="font-semibold mb-2 text-green-600">微调过程</h5>
+                            <ul class="text-sm space-y-1">
+                                <li>• 在预训练模型基础上进行进一步训练</li>
+                                <li>• 调整学习率和训练轮数</li>
+                                <li>• 监控模型性能指标变化</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mobile Architecture -->
+            <div id="mobile-architecture" class="mb-12">
+                <h2 class="text-2xl font-semibold mb-6 serif">2.3. 移动端架构设计与实现</h2>
+
+                <div class="chart-container">
+                    <h3 class="text-xl font-semibold mb-4">移动端BERT应用架构</h3>
+                    <div class="mermaid-container">
+                        <div class="mermaid-controls">
+                            <button class="mermaid-control-btn zoom-in" title="放大">
+                                <i class="fas fa-search-plus"></i>
+                            </button>
+                            <button class="mermaid-control-btn zoom-out" title="缩小">
+                                <i class="fas fa-search-minus"></i>
+                            </button>
+                            <button class="mermaid-control-btn reset-zoom" title="重置">
+                                <i class="fas fa-expand-arrows-alt"></i>
+                            </button>
+                            <button class="mermaid-control-btn fullscreen" title="全屏查看">
+                                <i class="fas fa-expand"></i>
+                            </button>
+                        </div>
+                        <div class="mermaid">
+                            graph TB
+                            A[&#34;用户界面层&#34;] --&gt; B[&#34;数据处理层&#34;]
+                            B --&gt; C[&#34;模型推理层&#34;]
+                            C --&gt; D[&#34;结果展示层&#34;]
+
+                            A --&gt; E[&#34;文本输入接收&#34;]
+                            A --&gt; F[&#34;结果可视化&#34;]
+
+                            B --&gt; G[&#34;Tokenization&#34;]
+                            B --&gt; H[&#34;序列分割&#34;]
+                            B --&gt; I[&#34;特征生成&#34;]
+
+                            C --&gt; J[&#34;Core ML模型加载&#34;]
+                            C --&gt; K[&#34;硬件加速推理&#34;]
+                            C --&gt; L[&#34;VNCoreMLRequest&#34;]
+
+                            D --&gt; M[&#34;情感标签展示&#34;]
+                            D --&gt; N[&#34;主题词云生成&#34;]
+                            D --&gt; O[&#34;统计图表&#34;]
+
+                            K --&gt; P[&#34;CPU/GPU/Neural Engine&#34;]
+
+                            style A fill:#e0e7ff,stroke:#6366f1,stroke-width:2px,color:#1e1b4b
+                            style C fill:#fef3c7,stroke:#f59e0b,stroke-width:2px,color:#92400e
+                            style P fill:#dcfce7,stroke:#22c55e,stroke-width:2px,color:#166534
+                            style B fill:#f1f5f9,stroke:#94a3b8,stroke-width:1px,color:#334155
+                            style D fill:#f1f5f9,stroke:#94a3b8,stroke-width:1px,color:#334155
+                            style E fill:#f8fafc,stroke:#64748b,stroke-width:1px,color:#334155
+                            style F fill:#f8fafc,stroke:#64748b,stroke-width:1px,color:#334155
+                            style G fill:#f8fafc,stroke:#64748b,stroke-width:1px,color:#334155
+                            style H fill:#f8fafc,stroke:#64748b,stroke-width:1px,color:#334155
+                            style I fill:#f8fafc,stroke:#64748b,stroke-width:1px,color:#334155
+                            style J fill:#f8fafc,stroke:#64748b,stroke-width:1px,color:#334155
+                            style K fill:#f8fafc,stroke:#64748b,stroke-width:1px,color:#334155
+                            style L fill:#f8fafc,stroke:#64748b,stroke-width:1px,color:#334155
+                            style M fill:#f8fafc,stroke:#64748b,stroke-width:1px,color:#334155
+                            style N fill:#f8fafc,stroke:#64748b,stroke-width:1px,color:#334155
+                            style O fill:#f8fafc,stroke:#64748b,stroke-width:1px,color:#334155
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid md:grid-cols-3 gap-6 mt-8">
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-xl font-semibold mb-4 text-blue-600">
+                            <i class="fas fa-mobile-alt mr-2"></i>前端界面
+                        </h3>
+                        <ul class="space-y-2 text-sm">
+                            <li>• 接收用户文本输入</li>
+                            <li>• 展示分析结果可视化</li>
+                            <li>• 提供交互式反馈机制</li>
+                            <li>• 支持多主题切换</li>
+                        </ul>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-xl font-semibold mb-4 text-green-600">
+                            <i class="fas fa-cogs mr-2"></i>数据处理
+                        </h3>
+                        <ul class="space-y-2 text-sm">
+                            <li>• Tokenization分词处理</li>
+                            <li>• 序列分割和填充</li>
+                            <li>• 特征向量生成</li>
+                            <li>• 输入验证和标准化</li>
+                        </ul>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-xl font-semibold mb-4 text-purple-600">
+                            <i class="fas fa-brain mr-2"></i>模型推理
+                        </h3>
+                        <ul class="space-y-2 text-sm">
+                            <li>• Core ML模型加载管理</li>
+                            <li>• 硬件加速优化</li>
+                            <li>• 推理结果解析</li>
+                            <li>• 性能监控和调优</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Insights Generation -->
+            <div id="insights-generation" class="mb-12">
+                <h2 class="text-2xl font-semibold mb-6 serif">2.4. 洞察生成与应用</h2>
+
+                <div class="grid md:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-6 rounded-lg">
+                        <div class="text-3xl mb-4">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-3">用户行为模式分析</h3>
+                        <p class="text-sm opacity-90">
+                            通过分析用户搜索关键词序列，了解兴趣演变过程，预测下一步需求，主动推荐相关产品或服务
+                        </p>
+                    </div>
+                    <div class="bg-gradient-to-br from-green-500 to-green-600 text-white p-6 rounded-lg">
+                        <div class="text-3xl mb-4">
+                            <i class="fas fa-comments"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-3">产品反馈与痛点识别</h3>
+                        <p class="text-sm opacity-90">
+                            通过大规模情感分析和主题提取，快速发现产品问题和用户关注的功能点<a
+                                href="https://cris.tuni.fi/ws/portalfiles/portal/95801397/Sentiment_Analysis_of_Mobile_Apps_Using_BERT.pdf"
+                                class="citation">[172]</a>
+                        </p>
+                    </div>
+                    <div class="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-6 rounded-lg">
+                        <div class="text-3xl mb-4">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-3">隐私保护处理</h3>
+                        <p class="text-sm opacity-90">
+                            所有数据处理和分析都在用户设备本地完成，原始文本数据不会被上传到云端服务器
+                        </p>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-xl font-semibold mb-4">洞察生成流程</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-start space-x-4">
+                            <div
+                                class="bg-blue-100 text-blue-600 rounded-full w-8 h-8 flex items-center justify-center font-semibold text-sm">
+                                1</div>
+                            <div>
+                                <h4 class="font-semibold">数据收集与预处理</h4>
+                                <p class="text-sm text-gray-600">收集用户评论、搜索关键词、聊天记录等文本数据，进行清洗和标准化处理</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-4">
+                            <div
+                                class="bg-green-100 text-green-600 rounded-full w-8 h-8 flex items-center justify-center font-semibold text-sm">
+                                2</div>
+                            <div>
+                                <h4 class="font-semibold">模型推理与分析</h4>
+                                <p class="text-sm text-gray-600">使用BERT模型进行情感分析、主题建模和关键词提取，发现用户态度、关注问题和潜在需求</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-4">
+                            <div
+                                class="bg-purple-100 text-purple-600 rounded-full w-8 h-8 flex items-center justify-center font-semibold text-sm">
+                                3</div>
+                            <div>
+                                <h4 class="font-semibold">洞察挖掘与关联</h4>
+                                <p class="text-sm text-gray-600">对分析结果进行进一步挖掘和关联，生成用户行为模式、产品痛点和市场趋势等深层次洞察</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-4">
+                            <div
+                                class="bg-orange-100 text-orange-600 rounded-full w-8 h-8 flex items-center justify-center font-semibold text-sm">
+                                4</div>
+                            <div>
+                                <h4 class="font-semibold">应用与价值实现</h4>
+                                <p class="text-sm text-gray-600">将洞察应用于个性化推荐、精准营销、产品迭代优化等，创造商业价值</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- Section 3: Federated Learning -->
+        <section id="federated-learning" class="p-8 max-w-6xl mx-auto">
+            <h1 class="text-4xl font-bold mb-8 serif">3. 场景应用二：端侧模型自训练与云端协同</h1>
+
+            <p class="text-lg mb-6 leading-relaxed">
+                在许多移动应用中，用户的需求和行为是动态变化的，一个固定的、预训练好的模型可能无法很好地适应这种变化。因此，需要一种能够让模型在设备端进行自学习和自适应的机制。本场景旨在探讨如何设计一个混合架构，将端侧模型的自训练能力与云端大模型的强大计算能力相结合，以实现一个既能保护用户隐私，又能提供高性能AI功能的智能系统。
+            </p>
+
+            <div class="chart-container">
+                <h3 class="text-xl font-semibold mb-4">端云协同架构</h3>
+                <div class="mermaid-container">
+                    <div class="mermaid-controls">
+                        <button class="mermaid-control-btn zoom-in" title="放大">
+                            <i class="fas fa-search-plus"></i>
+                        </button>
+                        <button class="mermaid-control-btn zoom-out" title="缩小">
+                            <i class="fas fa-search-minus"></i>
+                        </button>
+                        <button class="mermaid-control-btn reset-zoom" title="重置">
+                            <i class="fas fa-expand-arrows-alt"></i>
+                        </button>
+                        <button class="mermaid-control-btn fullscreen" title="全屏查看">
+                            <i class="fas fa-expand"></i>
+                        </button>
+                    </div>
+                    <div class="mermaid">
+                        graph TB
+                        A[&#34;用户设备&#34;] --&gt; B[&#34;任务分发器&#34;]
+                        B --&gt; C[&#34;本地轻量化模型&#34;]
+                        B --&gt; D[&#34;云端大模型API&#34;]
+
+                        C --&gt; E[&#34;高置信度任务&#34;]
+                        C --&gt; F[&#34;低置信度任务&#34;]
+
+                        E --&gt; G[&#34;本地推理结果&#34;]
+                        F --&gt; D
+                        D --&gt; H[&#34;云端处理结果&#34;]
+
+                        G --&gt; I[&#34;结果整合&#34;]
+                        H --&gt; I
+
+                        I --&gt; J[&#34;用户反馈收集&#34;]
+                        J --&gt; K[&#34;本地模型更新&#34;]
+                        K --&gt; C
+
+                        K --&gt; L[&#34;联邦学习&#34;]
+                        L --&gt; M[&#34;全局模型聚合&#34;]
+                        M --&gt; N[&#34;模型更新推送&#34;]
+                        N --&gt; K
+
+                        style A fill:#e0e7ff,stroke:#6366f1,stroke-width:2px,color:#1e1b4b
+                        style C fill:#dcfce7,stroke:#22c55e,stroke-width:2px,color:#166534
+                        style D fill:#fef3c7,stroke:#f59e0b,stroke-width:2px,color:#92400e
+                        style M fill:#dbeafe,stroke:#3b82f6,stroke-width:2px,color:#1e40af
+                        style B fill:#f1f5f9,stroke:#94a3b8,stroke-width:1px,color:#334155
+                        style E fill:#f8fafc,stroke:#64748b,stroke-width:1px,color:#334155
+                        style F fill:#f8fafc,stroke:#64748b,stroke-width:1px,color:#334155
+                        style G fill:#f8fafc,stroke:#64748b,stroke-width:1px,color:#334155
+                        style H fill:#f8fafc,stroke:#64748b,stroke-width:1px,color:#334155
+                        style I fill:#f1f5f9,stroke:#94a3b8,stroke-width:1px,color:#334155
+                        style J fill:#f1f5f9,stroke:#94a3b8,stroke-width:1px,color:#334155
+                        style K fill:#f1f5f9,stroke:#94a3b8,stroke-width:1px,color:#334155
+                        style L fill:#f1f5f9,stroke:#94a3b8,stroke-width:1px,color:#334155
+                        style N fill:#f1f5f9,stroke:#94a3b8,stroke-width:1px,color:#334155
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hybrid Architecture -->
+            <div id="hybrid-architecture" class="mb-12">
+                <h2 class="text-2xl font-semibold mb-6 serif">3.1. 混合架构设计</h2>
+
+                <div class="grid md:grid-cols-3 gap-8 mb-8">
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <div class="text-blue-600 text-3xl mb-4">
+                            <i class="fas fa-mobile-alt"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-4 text-blue-600">本地模型</h3>
+                        <p class="text-sm mb-4">轻量化BERT与设备端训练</p>
+                        <ul class="text-sm space-y-2">
+                            <li>• MobileBERT或DistilBERT</li>
+                            <li>• 支持设备端自训练</li>
+                            <li>• 利用MLUpdateTask API<a href="https://arxiv.org/html/2409.14162v1"
+                                    class="citation">[1]</a>
+                            </li>
+                            <li>• 根据用户反馈微调</li>
+                        </ul>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <div class="text-green-600 text-3xl mb-4">
+                            <i class="fas fa-cloud"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-4 text-green-600">云端API</h3>
+                        <p class="text-sm mb-4">处理复杂与高算力需求任务</p>
+                        <ul class="text-sm space-y-2">
+                            <li>• BERT-large或GPT系列</li>
+                            <li>• 强大的GPU集群支持</li>
+                            <li>• 高可用性和低延迟</li>
+                            <li>• 处理复杂语义分析</li>
+                        </ul>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <div class="text-purple-600 text-3xl mb-4">
+                            <i class="fas fa-sync-alt"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-4 text-purple-600">协同工作流</h3>
+                        <p class="text-sm mb-4">智能任务分发与结果整合</p>
+                        <ul class="text-sm space-y-2">
+                            <li>• 基于置信度任务分发</li>
+                            <li>• 网络状况感知</li>
+                            <li>• 结果一致性保证</li>
+                            <li>• 动态负载均衡</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-xl font-semibold mb-4">协同工作流程设计</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center space-x-4">
+                            <div
+                                class="bg-blue-100 text-blue-600 rounded-full w-10 h-10 flex items-center justify-center font-semibold">
+                                1</div>
+                            <div class="flex-1">
+                                <h4 class="font-semibold">任务接收与分析</h4>
+                                <p class="text-sm text-gray-600">接收用户评论等任务，分析其复杂度和特征</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <div
+                                class="bg-green-100 text-green-600 rounded-full w-10 h-10 flex items-center justify-center font-semibold">
+                                2</div>
+                            <div class="flex-1">
+                                <h4 class="font-semibold">本地模型推理</h4>
+                                <p class="text-sm text-gray-600">首先使用本地轻量化模型进行推理，获得置信度分数</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <div
+                                class="bg-orange-100 text-orange-600 rounded-full w-10 h-10 flex items-center justify-center font-semibold">
+                                3</div>
+                            <div class="flex-1">
+                                <h4 class="font-semibold">智能任务分发</h4>
+                                <p class="text-sm text-gray-600">根据置信度阈值和网络状况，决定本地处理或云端调用</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <div
+                                class="bg-purple-100 text-purple-600 rounded-full w-10 h-10 flex items-center justify-center font-semibold">
+                                4</div>
+                            <div class="flex-1">
+                                <h4 class="font-semibold">结果整合与反馈</h4>
+                                <p class="text-sm text-gray-600">整合本地和云端结果，收集用户反馈用于模型更新</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- On-Device Training -->
+            <div id="on-device-training" class="mb-12">
+                <h2 class="text-2xl font-semibold mb-6 serif">3.2. 端侧模型自训练与隐私保护</h2>
+
+                <div class="highlight-box">
+                    <h4 class="text-lg font-semibold mb-3">MLUpdateTask设备端训练</h4>
+                    <p class="mb-4">
+                        在iOS平台上，Core ML框架提供了
+                        <code class="bg-gray-100 px-2 py-1 rounded">MLUpdateTask</code>这一强大的工具，用于在设备端对模型进行训练<a
+                            href="https://arxiv.org/html/2409.14162v1" class="citation">[1]</a>。
+                        <code class="bg-gray-100 px-2 py-1 rounded">MLUpdateTask</code>允许开发者在用户的设备上，利用本地数据对Core
+                        ML模型进行微调，而无需将数据上传到云端。
+                    </p>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="bg-white p-4 rounded-lg">
+                            <h5 class="font-semibold mb-2 text-blue-600">训练流程</h5>
+                            <ol class="list-decimal list-inside text-sm space-y-1">
+                                <li>准备训练数据集（本地数据+标签）</li>
+                                <li>创建
+                                    <code>MLUpdateTask</code>实例
+                                </li>
+                                <li>指定训练数据、模型、损失函数、优化器</li>
+                                <li>后台启动训练任务</li>
+                                <li>生成更新后的模型</li>
+                            </ol>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg">
+                            <h5 class="font-semibold mb-2 text-green-600">标签策略</h5>
+                            <ul class="list-disc list-inside text-sm space-y-1">
+                                <li><strong>显式反馈</strong>：用户点赞/点踩行为</li>
+                                <li><strong>隐式反馈</strong>：阅读时长、分享行为</li>
+                                <li><strong>半监督学习</strong>：少量有标签+大量无标签数据</li>
+                                <li><strong>弱监督学习</strong>：利用用户行为模式自动生成标签</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-md p-6 mt-8">
+                    <h3 class="text-xl font-semibold mb-4">数据收集与标签策略</h3>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="font-semibold mb-3 text-blue-600">数据收集原则</h4>
+                            <ul class="space-y-2 text-sm">
+                                <li class="flex items-start space-x-2">
+                                    <i class="fas fa-check-circle text-green-500 mt-1"></i>
+                                    <span><strong>最小化原则</strong>：只收集与训练任务直接相关的数据</span>
+                                </li>
+                                <li class="flex items-start space-x-2">
+                                    <i class="fas fa-check-circle text-green-500 mt-1"></i>
+                                    <span><strong>透明度原则</strong>：明确告知用户数据收集目的和方式</span>
+                                </li>
+                                <li class="flex items-start space-x-2">
+                                    <i class="fas fa-check-circle text-green-500 mt-1"></i>
+                                    <span><strong>同意原则</strong>：获得用户的明确同意</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold mb-3 text-green-600">标签生成方法</h4>
+                            <ul class="space-y-2 text-sm">
+                                <li class="flex items-start space-x-2">
+                                    <i class="fas fa-tag text-blue-500 mt-1"></i>
+                                    <span><strong>用户反馈</strong>：点赞、点踩、评分等</span>
+                                </li>
+                                <li class="flex items-start space-x-2">
+                                    <i class="fas fa-clock text-orange-500 mt-1"></i>
+                                    <span><strong>行为数据</strong>：阅读时长、点击率、转化率</span>
+                                </li>
+                                <li class="flex items-start space-x-2">
+                                    <i class="fas fa-share text-purple-500 mt-1"></i>
+                                    <span><strong>社交互动</strong>：分享、评论、收藏行为</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Privacy Protection -->
+            <div id="privacy-protection" class="mb-12">
+                <h2 class="text-2xl font-semibold mb-6 serif">3.3. 隐私保护机制设计</h2>
+
+                <div class="grid md:grid-cols-2 gap-8 mb-8">
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-xl font-semibold mb-4 text-red-600">
+                            <i class="fas fa-lock mr-2"></i>核心保护原则
+                        </h3>
+                        <div class="space-y-4">
+                            <div class="border-l-4 border-red-500 pl-4">
+                                <h4 class="font-semibold">本地计算</h4>
+                                <p class="text-sm text-gray-600">所有模型训练和推理都在设备本地完成，用户原始数据永远不会以原始形式离开设备<a
+                                        href="https://anshadameenza.com/blog/technology/2025-12-08-on-device-hybrid-architectures-edge-ai/"
+                                        class="citation">[99]</a>
+                                    <a href="https://buuuk.com/blog/ai-mobile-apps-privacy" class="citation">[110]</a>
+                                </p>
+                            </div>
+                            <div class="border-l-4 border-blue-500 pl-4">
+                                <h4 class="font-semibold">数据最小化</h4>
+                                <p class="text-sm text-gray-600">严格遵守数据最小化原则，只收集完成任务所必需的最少数据</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-xl font-semibold mb-4 text-green-600">
+                            <i class="fas fa-network-wired mr-2"></i>高级保护技术
+                        </h3>
+                        <div class="space-y-4">
+                            <div class="border-l-4 border-green-500 pl-4">
+                                <h4 class="font-semibold">联邦学习</h4>
+                                <p class="text-sm text-gray-600">本地训练模型，只上传模型权重更新，实现&#34;数据不动模型动&#34;<a
+                                        href="https://milvus.io/ai-quick-reference/how-is-federated-learning-implemented-on-edge-devices"
+                                        class="citation">[104]</a>
+                                    <a href="https://smartdev.com/ai-model-training/" class="citation">[97]</a>
+                                </p>
+                            </div>
+                            <div class="border-l-4 border-purple-500 pl-4">
+                                <h4 class="font-semibold">差分隐私</h4>
+                                <p class="text-sm text-gray-600">在上传信息前添加数学噪声，提供可量化的严格隐私保证<a
+                                        href="https://baltech.in/blog/privacy-preserving-ai-features-in-mobile-apps-the-new-frontier/"
+                                        class="citation">[111]</a>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-4">
+                        <h3 class="text-xl font-semibold">多层次隐私保护架构</h3>
+                    </div>
+                    <div class="p-6">
+                        <div class="grid md:grid-cols-3 gap-6">
+                            <div class="text-center">
+                                <div
+                                    class="bg-indigo-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <i class="fas fa-shield-alt text-indigo-600 text-2xl"></i>
+                                </div>
+                                <h4 class="font-semibold mb-2">传输安全</h4>
+                                <p class="text-sm text-gray-600">使用TLS/SSL加密传输，确保数据在传输过程中的安全</p>
+                            </div>
+                            <div class="text-center">
+                                <div
+                                    class="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <i class="fas fa-user-secret text-green-600 text-2xl"></i>
+                                </div>
+                                <h4 class="font-semibold mb-2">数据匿名化</h4>
+                                <p class="text-sm text-gray-600">移除或哈希处理个人身份信息，降低数据泄露风险</p>
+                            </div>
+                            <div class="text-center">
+                                <div
+                                    class="bg-purple-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <i class="fas fa-eye-slash text-purple-600 text-2xl"></i>
+                                </div>
+                                <h4 class="font-semibold mb-2">访问控制</h4>
+                                <p class="text-sm text-gray-600">严格的权限管理和访问控制，确保数据仅用于授权目的</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cloud Collaboration -->
+            <div id="cloud-collaboration" class="mb-12">
+                <h2 class="text-2xl font-semibold mb-6 serif">3.4. 云端协同与性能优化</h2>
+
+                <div class="grid md:grid-cols-2 gap-8 mb-8">
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-xl font-semibold mb-4 text-blue-600">
+                            <i class="fas fa-tasks mr-2"></i>任务分发策略
+                        </h3>
+                        <div class="space-y-4">
+                            <div class="bg-blue-50 p-4 rounded-lg">
+                                <h4 class="font-semibold mb-2">基于置信度分发</h4>
+                                <p class="text-sm">设定置信度阈值（如0.8），高于阈值直接采用本地结果，低于阈值发送至云端</p>
+                            </div>
+                            <div class="bg-green-50 p-4 rounded-lg">
+                                <h4 class="font-semibold mb-2">基于复杂度分发</h4>
+                                <p class="text-sm">根据文本长度、逻辑复杂度等属性，直接判定复杂任务并路由到云端</p>
+                            </div>
+                            <div class="bg-purple-50 p-4 rounded-lg">
+                                <h4 class="font-semibold mb-2">混合策略</h4>
+                                <p class="text-sm">结合置信度和复杂度，设计更智能的分发逻辑，实现更优性能</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-xl font-semibold mb-4 text-green-600">
+                            <i class="fas fa-rocket mr-2"></i>云端性能优化
+                        </h3>
+                        <div class="space-y-4">
+                            <div class="bg-green-50 p-4 rounded-lg">
+                                <h4 class="font-semibold mb-2">模型部署优化</h4>
+                                <p class="text-sm">使用TensorFlow Serving、TorchServe等框架，利用GPU加速优化BERT-large等大型模型</p>
+                            </div>
+                            <div class="bg-orange-50 p-4 rounded-lg">
+                                <h4 class="font-semibold mb-2">API设计优化</h4>
+                                <p class="text-sm">简洁清晰的API设计，结构化结果返回，良好的错误处理机制</p>
+                            </div>
+                            <div class="bg-red-50 p-4 rounded-lg">
+                                <h4 class="font-semibold mb-2">负载均衡与弹性伸缩</h4>
+                                <p class="text-sm">根据请求量自动增减服务器实例，保证服务稳定性和高可用性</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="highlight-box">
+                    <h4 class="text-lg font-semibold mb-3">数据传输安全与优化</h4>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="bg-white p-4 rounded-lg">
+                            <h5 class="font-semibold mb-2 text-blue-600">安全保障措施</h5>
+                            <ul class="text-sm space-y-1">
+                                <li>• <strong>传输加密</strong>：HTTPS/TLS协议加密</li>
+                                <li>• <strong>数据匿名化</strong>：移除个人身份信息</li>
+                                <li>• <strong>最小化传输</strong>：只发送必要数据</li>
+                                <li>• <strong>请求签名</strong>：防止请求篡改</li>
+                            </ul>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg">
+                            <h5 class="font-semibold mb-2 text-green-600">性能优化策略</h5>
+                            <ul class="text-sm space-y-1">
+                                <li>• <strong>请求合并</strong>：批量处理多个任务</li>
+                                <li>• <strong>缓存机制</strong>：缓存常用结果</li>
+                                <li>• <strong>压缩传输</strong>：减少数据传输量</li>
+                                <li>• <strong>智能重试</strong>：网络不稳定时优化重试策略</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="bg-gray-900 text-white p-8">
+            <div class="max-w-6xl mx-auto">
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div>
+                        <h3 class="text-xl font-semibold mb-4 serif">核心技术要点</h3>
+                        <ul class="space-y-2 text-sm text-gray-300">
+                            <li>• 模型压缩与优化技术</li>
+                            <li>• 移动端格式转换</li>
+                            <li>• 基座+Updatable架构</li>
+                            <li>• 隐私保护机制</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold mb-4 serif">应用场景</h3>
+                        <ul class="space-y-2 text-sm text-gray-300">
+                            <li>• 用户文本分析</li>
+                            <li>• 情感分析与洞察</li>
+                            <li>• 端云协同训练</li>
+                            <li>• 个性化推荐系统</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold mb-4 serif">核心价值</h3>
+                        <ul class="space-y-2 text-sm text-gray-300">
+                            <li>• 保护用户隐私</li>
+                            <li>• 实现实时响应</li>
+                            <li>• 降低云端依赖</li>
+                            <li>• 支持快速迭代</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="border-t border-gray-700 mt-8 pt-8 text-center text-sm text-gray-400">
+                    <p>本技术文档基于移动端BERT模型部署的最佳实践，旨在为开发者提供系统性的指导方案。</p>
+                </div>
+            </div>
+        </footer>
+    </main>
+
+    <script>
+        // Initialize Mermaid
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'default',
+            themeVariables: {
+                primaryColor: '#6366f1',
+                primaryTextColor: '#1e293b',
+                primaryBorderColor: '#3730a3',
+                lineColor: '#64748b',
+                secondaryColor: '#f1f5f9',
+                tertiaryColor: '#e2e8f0',
+                background: '#ffffff',
+                mainBkg: '#ffffff',
+                secondaryBkg: '#f8fafc',
+                tertiaryBkg: '#f1f5f9',
+                // Enhanced contrast settings
+                nodeBorder: '#1e1b4b',
+                clusterBkg: '#f8fafc',
+                clusterBorder: '#e2e8f0',
+                defaultLinkColor: '#64748b',
+                titleColor: '#1e293b',
+                edgeLabelBackground: '#ffffff',
+                nodeTextColor: '#1e293b'
+            },
+            flowchart: {
+                useMaxWidth: false,
+                htmlLabels: true,
+                curve: 'basis',
+                padding: 20
+            },
+            sequence: {
+                useMaxWidth: false,
+                wrap: true
+            },
+            gantt: {
+                useMaxWidth: false
+            }
+        });
+
+        // Initialize Mermaid Controls for zoom and pan
+        function initializeMermaidControls() {
+            const containers = document.querySelectorAll('.mermaid-container');
+
+            containers.forEach(container => {
+                const mermaidElement = container.querySelector('.mermaid');
+                let scale = 1;
+                let isDragging = false;
+                let startX, startY, translateX = 0, translateY = 0;
+
+                // 触摸相关状态
+                let isTouch = false;
+                let touchStartTime = 0;
+                let initialDistance = 0;
+                let initialScale = 1;
+                let isPinching = false;
+
+                // Zoom controls
+                const zoomInBtn = container.querySelector('.zoom-in');
+                const zoomOutBtn = container.querySelector('.zoom-out');
+                const resetBtn = container.querySelector('.reset-zoom');
+                const fullscreenBtn = container.querySelector('.fullscreen');
+
+                function updateTransform() {
+                    mermaidElement.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+
+                    if (scale > 1) {
+                        container.classList.add('zoomed');
+                    } else {
+                        container.classList.remove('zoomed');
+                    }
+
+                    mermaidElement.style.cursor = isDragging ? 'grabbing' : 'grab';
+                }
+
+                if (zoomInBtn) {
+                    zoomInBtn.addEventListener('click', () => {
+                        scale = Math.min(scale * 1.25, 4);
+                        updateTransform();
+                    });
+                }
+
+                if (zoomOutBtn) {
+                    zoomOutBtn.addEventListener('click', () => {
+                        scale = Math.max(scale / 1.25, 0.3);
+                        if (scale <= 1) {
+                            translateX = 0;
+                            translateY = 0;
+                        }
+                        updateTransform();
+                    });
+                }
+
+                if (resetBtn) {
+                    resetBtn.addEventListener('click', () => {
+                        scale = 1;
+                        translateX = 0;
+                        translateY = 0;
+                        updateTransform();
+                    });
+                }
+
+                if (fullscreenBtn) {
+                    fullscreenBtn.addEventListener('click', () => {
+                        if (container.requestFullscreen) {
+                            container.requestFullscreen();
+                        } else if (container.webkitRequestFullscreen) {
+                            container.webkitRequestFullscreen();
+                        } else if (container.msRequestFullscreen) {
+                            container.msRequestFullscreen();
+                        }
+                    });
+                }
+
+                // Mouse Events
+                mermaidElement.addEventListener('mousedown', (e) => {
+                    if (isTouch) return; // 如果是触摸设备，忽略鼠标事件
+
+                    isDragging = true;
+                    startX = e.clientX - translateX;
+                    startY = e.clientY - translateY;
+                    mermaidElement.style.cursor = 'grabbing';
+                    updateTransform();
+                    e.preventDefault();
+                });
+
+                document.addEventListener('mousemove', (e) => {
+                    if (isDragging && !isTouch) {
+                        translateX = e.clientX - startX;
+                        translateY = e.clientY - startY;
+                        updateTransform();
+                    }
+                });
+
+                document.addEventListener('mouseup', () => {
+                    if (isDragging && !isTouch) {
+                        isDragging = false;
+                        mermaidElement.style.cursor = 'grab';
+                        updateTransform();
+                    }
+                });
+
+                document.addEventListener('mouseleave', () => {
+                    if (isDragging && !isTouch) {
+                        isDragging = false;
+                        mermaidElement.style.cursor = 'grab';
+                        updateTransform();
+                    }
+                });
+
+                // 获取两点之间的距离
+                function getTouchDistance(touch1, touch2) {
+                    return Math.hypot(
+                        touch2.clientX - touch1.clientX,
+                        touch2.clientY - touch1.clientY
+                    );
+                }
+
+                // Touch Events - 触摸事件处理
+                mermaidElement.addEventListener('touchstart', (e) => {
+                    isTouch = true;
+                    touchStartTime = Date.now();
+
+                    if (e.touches.length === 1) {
+                        // 单指拖动
+                        isPinching = false;
+                        isDragging = true;
+
+                        const touch = e.touches[0];
+                        startX = touch.clientX - translateX;
+                        startY = touch.clientY - translateY;
+
+                    } else if (e.touches.length === 2) {
+                        // 双指缩放
+                        isPinching = true;
+                        isDragging = false;
+
+                        const touch1 = e.touches[0];
+                        const touch2 = e.touches[1];
+                        initialDistance = getTouchDistance(touch1, touch2);
+                        initialScale = scale;
+                    }
+
+                    e.preventDefault();
+                }, { passive: false });
+
+                mermaidElement.addEventListener('touchmove', (e) => {
+                    if (e.touches.length === 1 && isDragging && !isPinching) {
+                        // 单指拖动
+                        const touch = e.touches[0];
+                        translateX = touch.clientX - startX;
+                        translateY = touch.clientY - startY;
+                        updateTransform();
+
+                    } else if (e.touches.length === 2 && isPinching) {
+                        // 双指缩放
+                        const touch1 = e.touches[0];
+                        const touch2 = e.touches[1];
+                        const currentDistance = getTouchDistance(touch1, touch2);
+
+                        if (initialDistance > 0) {
+                            const newScale = Math.min(Math.max(
+                                initialScale * (currentDistance / initialDistance),
+                                0.3
+                            ), 4);
+                            scale = newScale;
+                            updateTransform();
+                        }
+                    }
+
+                    e.preventDefault();
+                }, { passive: false });
+
+                mermaidElement.addEventListener('touchend', (e) => {
+                    // 重置状态
+                    if (e.touches.length === 0) {
+                        isDragging = false;
+                        isPinching = false;
+                        initialDistance = 0;
+
+                        // 延迟重置isTouch，避免鼠标事件立即触发
+                        setTimeout(() => {
+                            isTouch = false;
+                        }, 100);
+                    } else if (e.touches.length === 1 && isPinching) {
+                        // 从双指变为单指，切换为拖动模式
+                        isPinching = false;
+                        isDragging = true;
+
+                        const touch = e.touches[0];
+                        startX = touch.clientX - translateX;
+                        startY = touch.clientY - translateY;
+                    }
+
+                    updateTransform();
+                });
+
+                mermaidElement.addEventListener('touchcancel', (e) => {
+                    isDragging = false;
+                    isPinching = false;
+                    initialDistance = 0;
+
+                    setTimeout(() => {
+                        isTouch = false;
+                    }, 100);
+
+                    updateTransform();
+                });
+
+                // Enhanced wheel zoom with better center point handling
+                container.addEventListener('wheel', (e) => {
+                    e.preventDefault();
+                    const rect = container.getBoundingClientRect();
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+
+                    const delta = e.deltaY > 0 ? 0.9 : 1.1;
+                    const newScale = Math.min(Math.max(scale * delta, 0.3), 4);
+
+                    // Adjust translation to zoom towards center
+                    if (newScale !== scale) {
+                        const scaleDiff = newScale / scale;
+                        translateX = translateX * scaleDiff;
+                        translateY = translateY * scaleDiff;
+                        scale = newScale;
+
+                        if (scale <= 1) {
+                            translateX = 0;
+                            translateY = 0;
+                        }
+
+                        updateTransform();
+                    }
+                });
+
+                // Initialize display
+                updateTransform();
+            });
+        }
+
+        // Smooth scrolling for TOC links
+        document.querySelectorAll('.toc-link').forEach(link => {
+            link.addEventListener('click', function (e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    targetElement.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Highlight active section in TOC
+        function updateActiveTocLink() {
+            const sections = document.querySelectorAll('section[id]');
+            const tocLinks = document.querySelectorAll('.toc-link');
+
+            let currentSection = '';
+            sections.forEach(section => {
+                const rect = section.getBoundingClientRect();
+                if (rect.top <= 100 && rect.bottom >= 100) {
+                    currentSection = section.id;
+                }
+            });
+
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + currentSection) {
+                    link.classList.add('active');
+                }
+            });
+        }
+
+        // Update TOC on scroll
+        window.addEventListener('scroll', updateActiveTocLink);
+        window.addEventListener('load', updateActiveTocLink);
+
+        // Add hover effects to charts
+        document.querySelectorAll('.chart-container').forEach(chart => {
+            chart.addEventListener('mouseenter', function () {
+                this.style.transform = 'translateY(-2px)';
+                this.style.transition = 'transform 0.2s ease';
+            });
+
+            chart.addEventListener('mouseleave', function () {
+                this.style.transform = 'translateY(0)';
+            });
+        });
+
+        // Initialize mermaid controls after DOM is loaded
+        document.addEventListener('DOMContentLoaded', function () {
+            initializeMermaidControls();
+        });
+    </script>
+
+
+</body>
+
+</html>
