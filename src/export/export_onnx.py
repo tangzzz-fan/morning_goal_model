@@ -21,7 +21,12 @@ def export_onnx(model, sample_enc, output_path, opset):
         if k in sample_enc:
             t = torch.tensor(sample_enc[k][:1])
             inputs[k] = t
-    dynamic_axes = {k: {0: "batch", 1: "seq"} for k in inputs.keys()}
+    dynamic_axes = {
+        "input_ids": {0: "batch_size", 1: "sequence_length"},
+        "attention_mask": {0: "batch_size", 1: "sequence_length"},
+        "token_type_ids": {0: "batch_size", 1: "sequence_length"},
+        "logits": {0: "batch_size"},
+    }
     torch.onnx.export(
         model,
         (
@@ -32,7 +37,7 @@ def export_onnx(model, sample_enc, output_path, opset):
         str(output_path),
         input_names=list(inputs.keys()),
         output_names=["logits"],
-        dynamic_axes=dynamic_axes | {"logits": {0: "batch"}},
+        dynamic_axes=dynamic_axes,
         opset_version=opset,
         do_constant_folding=True,
     )
