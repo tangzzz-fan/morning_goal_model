@@ -54,6 +54,7 @@ python3 src/training/train_small_classifier.py
 
 ### 2. 模型训练与优化
 *   **[模型调优实战指南](docs/04_guides/Model_Optimization_Guide.md)** (⭐ **核心实操**): 如何训练一个更小、更准的模型？包含**知识蒸馏**、**量化**和**剪枝**的详细操作步骤。
+*   **[多任务模型快速开始](docs/04_guides/Multitask_Quick_Start.md)** (⭐ **新功能**): 主题分类 + 情感分析的多任务模型训练与部署指南。
 *   **[MobileBERT 分析报告](docs/02_training/MobileBERT_Analysis.md)**: 为什么我们选择 MobileBERT？它与学生模型有何不同？
 
 ### 3. 移动端部署
@@ -64,19 +65,30 @@ python3 src/training/train_small_classifier.py
 
 ## 🛠️ 常用开发命令
 
-**1. 知识蒸馏 (Training Student Model):**
+**1. 多任务模型训练 (Multitask Model - Topic + Sentiment):**
+```bash
+# 训练多任务模型（主题分类 + 情感分析）
+./scripts/train_multitask.sh
+
+# 导出到 CoreML
+./scripts/export_multitask_coreml.sh
+```
+
+**2. 知识蒸馏 (Training Student Model):**
 ```bash
 python3 src/training/distill_student.py \
     --teacher_model models/trained/teacher_bert \
     --output_dir models/trained/student_model
 ```
 
-**2. 导出 Core ML 模型 (Export):**
+**3. 导出 Core ML 模型 (Export):**
 ```bash
 python3 src/export/export_coreml.py \
-    --onnx_path models/onnx/model.onnx \
+    --model_dir models/trained/distill_student \
     --output_dir models/coreml
 ```
+
+**📖 更多信息**: 查看 **[多任务模型快速开始](docs/04_guides/Multitask_Quick_Start.md)**
 
 ---
 
