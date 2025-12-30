@@ -1,0 +1,19 @@
+{
+    "model_path": "models/trained/distill_student",
+    "quality_thresholds": {
+        "topic_accuracy_min": 0.60,
+        "topic_f1_min": 0.55,
+        "sentiment_accuracy_min": 0.70,
+        "sentiment_f1_min": 0.65,
+        "inference_time_max_ms": 100
+    },
+    "regression_thresholds": {
+        "max_accuracy_drop": 0.05,
+        "max_f1_drop": 0.05
+    },
+    "test_settings": {
+        "max_test_samples": 500,
+        "regression_test_samples": 300,
+        "random_seed": 42
+    }
+}

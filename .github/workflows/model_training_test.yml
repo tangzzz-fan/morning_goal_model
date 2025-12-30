@@ -1,0 +1,118 @@
+name: Model Training & Quality Check
+
+on:
+  workflow_dispatch:
+    inputs:
+      training_script:
+        description: 'Training script to run'
+        required: true
+        default: 'scripts/train_multitask.sh'
+      run_quality_test:
+        description: 'Run quality tests after training'
+        required: false
+        default: 'true'
+
+jobs:
+  train-and-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest pytest-cov pytest-html
+    
+    - name: Run training
+      id: training
+      run: |
+        echo "Starting model training..."
+        # 这里添加实际的训练命令
+        # bash ${{ github.event.inputs.training_script }}
+        
+        # 示例：使用Python训练脚本
+        # python src/training/train_multitask.py --output_dir models/trained/new_model
+        
+        echo "Training completed!"
+        echo "model_path=models/trained/new_model" >> $GITHUB_OUTPUT
+    
+    - name: Run quality tests
+      if: github.event.inputs.run_quality_test == 'true'
+      env:
+        TEST_MAX_SAMPLES: 500
+      run: |
+        echo "Running quality tests on newly trained model..."
+        pytest tests/test_model_quality.py -v --tb=short \
+          --html=test_reports/quality_test_report.html --self-contained-html
+    
+    - name: Run regression tests
+      if: github.event.inputs.run_quality_test == 'true'
+      env:
+        REGRESSION_TEST_SAMPLES: 300
+      run: |
+        pytest tests/test_model_regression.py -v --tb=short \
+          --html=test_reports/regression_test_report.html --self-contained-html
+      continue-on-error: true
+    
+    - name: Check test results
+      if: github.event.inputs.run_quality_test == 'true'
+      run: |
+        echo "Checking if model meets quality thresholds..."
+        
+        if [ -f "tests/reports/current_metrics.json" ]; then
+          python -c "
+        import json
+        import sys
+        
+        with open('tests/reports/current_metrics.json') as f:
+            metrics = json.load(f)
+        
+        with open('tests/test_config.json') as f:
+            config = json.load(f)
+        
+        thresholds = config['quality_thresholds']
+        
+        passed = True
+        if metrics['topic_accuracy'] < thresholds['topic_accuracy_min']:
+            print(f\"❌ Topic accuracy too low: {metrics['topic_accuracy']:.4f} < {thresholds['topic_accuracy_min']}\")
+            passed = False
+        
+        if metrics['sentiment_accuracy'] < thresholds['sentiment_accuracy_min']:
+            print(f\"❌ Sentiment accuracy too low: {metrics['sentiment_accuracy']:.4f} < {thresholds['sentiment_accuracy_min']}\")
+            passed = False
+        
+        if passed:
+            print('✅ All quality checks passed!')
+        else:
+            print('❌ Quality checks failed!')
+            sys.exit(1)
+          "
+        fi
+    
+    - name: Save model artifact
+      if: success()
+      uses: actions/upload-artifact@v3
+      with:
+        name: trained-model
+        path: ${{ steps.training.outputs.model_path }}
+        retention-days: 7
+    
+    - name: Upload test reports
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: training-test-reports
+        path: |
+          test_reports/
+          tests/reports/
+        retention-days: 30
+

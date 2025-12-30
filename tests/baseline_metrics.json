@@ -1,0 +1,9 @@
+{
+    "model_version": "distill_student_v1",
+    "test_date": "2024-01-01",
+    "topic_accuracy": 0.65,
+    "topic_f1": 0.60,
+    "sentiment_accuracy": 0.75,
+    "sentiment_f1": 0.70,
+    "notes": "初始基准模型指标。实际使用时，请运行测试后更新这些值。"
+}

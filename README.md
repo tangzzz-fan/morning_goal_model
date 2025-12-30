@@ -44,6 +44,46 @@ python3 src/training/train_small_classifier.py
 
 ---
 
+## 🧪 模型质量测试 (Model Testing)
+
+本项目配备了完整的模型质量测试系统，确保每次模型训练后都能达到预设的质量标准。
+
+### 快速开始
+
+```bash
+# 运行所有测试
+bash scripts/run_tests.sh
+
+# 运行质量测试
+bash scripts/run_tests.sh -t quality
+
+# 查看测试报告
+open test_reports/all_tests_report.html
+```
+
+### 测试层级
+
+- **单元测试** - 测试模型架构和组件 (~30秒)
+- **集成测试** - 测试完整推理pipeline (~2分钟)
+- **质量测试** - 验证性能指标达标 (~5分钟)
+- **回归测试** - 确保新模型不退化 (~5分钟)
+
+### 质量标准
+
+| 指标 | 最低要求 |
+|------|----------|
+| 主题分类准确率 | ≥ 60% |
+| 情感分析准确率 | ≥ 70% |
+| 推理速度 | ≤ 100ms/样本 |
+
+### 详细文档
+
+- 📄 [5分钟快速开始](TESTING_QUICKSTART.md)
+- 📄 [完整测试指南](docs/04_guides/Model_Testing_Guide.md)
+- 📄 [实施报告](IMPLEMENTATION_REPORT.md)
+
+---
+
 ## 📖 核心文档导航 (Documentation)
 
 为了帮助你快速上手并深入理解项目，我们准备了以下核心指南：

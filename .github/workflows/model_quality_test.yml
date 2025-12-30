@@ -1,0 +1,184 @@
+name: Model Quality Test
+
+on:
+  # 在推送代码时触发
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'models/trained/**'
+      - 'src/**'
+      - 'tests/**'
+      - '.github/workflows/model_quality_test.yml'
+  
+  # 在PR时触发
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'models/trained/**'
+      - 'src/**'
+      - 'tests/**'
+  
+  # 支持手动触发
+  workflow_dispatch:
+    inputs:
+      model_path:
+        description: 'Model path to test (relative to repo root)'
+        required: false
+        default: 'models/trained/distill_student'
+      test_level:
+        description: 'Test level (unit, integration, quality, all)'
+        required: false
+        default: 'all'
+
+jobs:
+  test-model:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        python-version: ['3.9', '3.10']
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        lfs: true  # 如果模型文件使用Git LFS
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest pytest-cov pytest-html pytest-xdist
+    
+    - name: Check model exists
+      id: check_model
+      run: |
+        MODEL_PATH="${{ github.event.inputs.model_path || 'models/trained/distill_student' }}"
+        if [ -d "$MODEL_PATH" ]; then
+          echo "Model found at $MODEL_PATH"
+          echo "model_exists=true" >> $GITHUB_OUTPUT
+        else
+          echo "Model not found at $MODEL_PATH, will skip some tests"
+          echo "model_exists=false" >> $GITHUB_OUTPUT
+        fi
+    
+    - name: Run unit tests
+      if: github.event.inputs.test_level == 'unit' || github.event.inputs.test_level == 'all' || github.event.inputs.test_level == ''
+      run: |
+        pytest tests/test_model_unit.py -v --tb=short \
+          --cov=src --cov-report=xml --cov-report=html \
+          --html=test_reports/unit_test_report.html --self-contained-html
+    
+    - name: Run integration tests
+      if: (github.event.inputs.test_level == 'integration' || github.event.inputs.test_level == 'all' || github.event.inputs.test_level == '') && steps.check_model.outputs.model_exists == 'true'
+      run: |
+        pytest tests/test_model_integration.py -v --tb=short \
+          --html=test_reports/integration_test_report.html --self-contained-html
+    
+    - name: Run quality tests
+      if: (github.event.inputs.test_level == 'quality' || github.event.inputs.test_level == 'all' || github.event.inputs.test_level == '') && steps.check_model.outputs.model_exists == 'true'
+      env:
+        TEST_MAX_SAMPLES: 500
+      run: |
+        pytest tests/test_model_quality.py -v --tb=short \
+          --html=test_reports/quality_test_report.html --self-contained-html
+    
+    - name: Run regression tests
+      if: (github.event.inputs.test_level == 'all' || github.event.inputs.test_level == '') && steps.check_model.outputs.model_exists == 'true'
+      env:
+        REGRESSION_TEST_SAMPLES: 300
+      run: |
+        pytest tests/test_model_regression.py -v --tb=short \
+          --html=test_reports/regression_test_report.html --self-contained-html
+      continue-on-error: true  # 回归测试失败不阻止workflow
+    
+    - name: Generate test summary
+      if: always()
+      run: |
+        echo "## Test Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        if [ -f "tests/reports/quality_test_report.json" ]; then
+          echo "### Quality Metrics" >> $GITHUB_STEP_SUMMARY
+          python -c "
+        import json
+        with open('tests/reports/quality_test_report.json') as f:
+            data = json.load(f)
+        topic = data.get('topic_classification', {}).get('macro avg', {})
+        sentiment = data.get('sentiment_analysis', {}).get('macro avg', {})
+        print(f\"- Topic F1: {topic.get('f1-score', 0):.4f}\")
+        print(f\"- Sentiment F1: {sentiment.get('f1-score', 0):.4f}\")
+          " >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        if [ -f "tests/reports/current_metrics.json" ]; then
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Current Model Metrics" >> $GITHUB_STEP_SUMMARY
+          python -c "
+        import json
+        with open('tests/reports/current_metrics.json') as f:
+            data = json.load(f)
+        for key, value in data.items():
+            print(f\"- {key}: {value:.4f}\")
+          " >> $GITHUB_STEP_SUMMARY
+        fi
+    
+    - name: Upload test reports
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-reports-py${{ matrix.python-version }}
+        path: |
+          test_reports/
+          tests/reports/
+          htmlcov/
+        retention-days: 30
+    
+    - name: Upload coverage to Codecov
+      if: matrix.python-version == '3.10'
+      uses: codecov/codecov-action@v3
+      with:
+        files: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+    
+    - name: Comment PR with results
+      if: github.event_name == 'pull_request' && always()
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          let comment = '## 🤖 Model Quality Test Results\n\n';
+          
+          // Read metrics if available
+          try {
+            if (fs.existsSync('tests/reports/current_metrics.json')) {
+              const metrics = JSON.parse(fs.readFileSync('tests/reports/current_metrics.json', 'utf8'));
+              comment += '### 📊 Performance Metrics\n\n';
+              comment += '| Metric | Value |\n';
+              comment += '|--------|-------|\n';
+              for (const [key, value] of Object.entries(metrics)) {
+                comment += `| ${key} | ${value.toFixed(4)} |\n`;
+              }
+              comment += '\n';
+            }
+          } catch (e) {
+            console.log('Could not read metrics file:', e);
+          }
+          
+          comment += '📝 Detailed reports are available in the workflow artifacts.\n';
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: comment
+          });
+
