@@ -133,30 +133,7 @@ class MultitaskTrainer(Trainer):
         return (loss, logits, labels)
 
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--data_dir", default="data/processed")
-    parser.add_argument(
-        "--base_model",
-        default="models/trained/distill_student",
-        help="Base model to initialize from (will add multitask heads)",
-    )
-    parser.add_argument("--batch_size", type=int, default=24)
-    parser.add_argument("--epochs", type=int, default=3)
-    parser.add_argument("--lr", type=float, default=2e-5)
-    parser.add_argument("--max_length", type=int, default=128)
-    parser.add_argument(
-        "--output_dir",
-        default="models/trained/multitask_model",
-    )
-    parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--limit_train", type=int, default=20000)
-    parser.add_argument("--limit_eval", type=int, default=4000)
-    parser.add_argument("--grad_accum", type=int, default=1)
-    parser.add_argument("--num_topic_labels", type=int, default=16)
-    parser.add_argument("--num_sentiment_labels", type=int, default=3)
-    args = parser.parse_args()
-    
+def run_training(args):
     torch.manual_seed(args.seed)
     use_gpu = torch.cuda.is_available()
     if use_gpu:
@@ -305,6 +282,33 @@ def main():
     print("\n" + "="*50)
     print("Training completed successfully!")
     print("="*50)
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--data_dir", default="data/processed")
+    parser.add_argument(
+        "--base_model",
+        default="models/trained/distill_student",
+        help="Base model to initialize from (will add multitask heads)",
+    )
+    parser.add_argument("--batch_size", type=int, default=24)
+    parser.add_argument("--epochs", type=int, default=3)
+    parser.add_argument("--lr", type=float, default=2e-5)
+    parser.add_argument("--max_length", type=int, default=128)
+    parser.add_argument(
+        "--output_dir",
+        default="models/trained/multitask_model",
+    )
+    parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--limit_train", type=int, default=20000)
+    parser.add_argument("--limit_eval", type=int, default=4000)
+    parser.add_argument("--grad_accum", type=int, default=1)
+    parser.add_argument("--num_topic_labels", type=int, default=16)
+    parser.add_argument("--num_sentiment_labels", type=int, default=3)
+    args = parser.parse_args()
+    
+    run_training(args)
 
 
 if __name__ == "__main__":
