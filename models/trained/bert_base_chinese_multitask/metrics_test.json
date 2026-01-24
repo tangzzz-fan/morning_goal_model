@@ -1,0 +1,1 @@
+{"eval_loss":3.5745551586,"eval_topic_f1":0.0,"eval_topic_accuracy":0.0,"eval_sentiment_f1":0.4444444444,"eval_sentiment_accuracy":0.8,"eval_avg_f1":0.2222222222,"eval_avg_accuracy":0.4,"eval_runtime":0.1203,"eval_samples_per_second":83.15,"eval_steps_per_second":8.315,"epoch":1.0}
