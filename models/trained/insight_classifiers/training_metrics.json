@@ -1,0 +1,76 @@
+{
+  "urgency": {
+    "name": "urgency",
+    "num_classes": 3,
+    "labels": [
+      "low",
+      "medium",
+      "high"
+    ],
+    "best_epoch": 13,
+    "val_accuracy": 0.9421666666666667,
+    "val_f1_macro": 0.653781968520171,
+    "test_accuracy": 0.9461666666666667,
+    "test_f1_macro": 0.6667932651244909
+  },
+  "timeFrame": {
+    "name": "timeFrame",
+    "num_classes": 4,
+    "labels": [
+      "today",
+      "this_week",
+      "this_month",
+      "long_term"
+    ],
+    "best_epoch": 8,
+    "val_accuracy": 0.9984166666666666,
+    "val_f1_macro": 0.9722853974054111,
+    "test_accuracy": 0.9995,
+    "test_f1_macro": 0.9916615087585593
+  },
+  "actionType": {
+    "name": "actionType",
+    "num_classes": 6,
+    "labels": [
+      "learning",
+      "exercise",
+      "work",
+      "lifestyle",
+      "social",
+      "creative"
+    ],
+    "best_epoch": 15,
+    "val_accuracy": 0.9829166666666667,
+    "val_f1_macro": 0.9742970303542697,
+    "test_accuracy": 0.983,
+    "test_f1_macro": 0.9719672855245918
+  },
+  "difficulty": {
+    "name": "difficulty",
+    "num_classes": 3,
+    "labels": [
+      "easy",
+      "moderate",
+      "hard"
+    ],
+    "best_epoch": 12,
+    "val_accuracy": 0.7866666666666666,
+    "val_f1_macro": 0.6695517895027484,
+    "test_accuracy": 0.7833333333333333,
+    "test_f1_macro": 0.6651012919761552
+  },
+  "specificity": {
+    "name": "specificity",
+    "num_classes": 3,
+    "labels": [
+      "vague",
+      "moderate",
+      "specific"
+    ],
+    "best_epoch": 15,
+    "val_accuracy": 0.88725,
+    "val_f1_macro": 0.6351409429907724,
+    "test_accuracy": 0.8816666666666667,
+    "test_f1_macro": 0.6223141750277679
+  }
+}
