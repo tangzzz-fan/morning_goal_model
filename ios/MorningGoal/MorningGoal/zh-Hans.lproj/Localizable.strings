@@ -1,0 +1,140 @@
+/* 
+  Localizable.strings (Chinese - Simplified)
+  MorningGoal
+*/
+
+// MARK: - Launch Screen
+"app_name" = "Morning Goal";
+"app_tagline" = "每天30秒，定义你的焦点";
+
+// MARK: - Onboarding (New 6-Page Flow)
+"onboarding_page1_title" = "提升 42% 达成率";
+"onboarding_page1_subtitle" = "心理学研究表明，只需写下目标，就能显著提高实现概率。";
+
+"onboarding_page2_title" = "极简主义";
+"onboarding_page2_subtitle" = "每天只专注一件事。没有复杂的待办列表，只有当下的重心。";
+
+"onboarding_page3_title" = "自然生长";
+"onboarding_page3_subtitle" = "累积连胜，回顾历史。让成长自然发生，无需刻意坚持。";
+
+"onboarding_page4_title" = "设定早晨窗口"; // Window
+"onboarding_page5_title" = "做出承诺"; // Commitment
+"onboarding_page6_title" = "开启提醒"; // Permissions
+
+// Old keys (kept for reference or cleanup later)
+"onboarding_welcome_title" = "欢迎";
+"onboarding_welcome_message_intro" = "每天30秒。";
+"onboarding_welcome_message_research" = "研究表明，写下目标能让你";
+"onboarding_welcome_message_stat_prefix" = "实现目标的可能性";
+"onboarding_welcome_message_stat_value" = "提高42%";
+
+// Onboarding Feature Carousel
+"onboarding_feature_focus_title" = "每天一件事";
+"onboarding_feature_focus_subtitle" = "排除干扰，只设定今日最重要的一个目标。";
+"onboarding_feature_streak_title" = "保持连胜";
+"onboarding_feature_streak_subtitle" = "看着火焰点燃，让写下目标成为一种习惯。";
+"onboarding_feature_history_title" = "回顾足迹";
+"onboarding_feature_history_subtitle" = "回顾“历史上的今天”，看看你走了多远。";
+
+// Onboarding Feature Carousel - Variant 2
+"onboarding_feature_focus_title_v2" = "定义今天的胜利";
+"onboarding_feature_focus_subtitle_v2" = "今天最重要的一件事是什么？";
+"onboarding_feature_streak_title_v2" = "坚持就是胜利";
+"onboarding_feature_streak_subtitle_v2" = "不要中断链条，保持前进。";
+"onboarding_feature_history_title_v2" = "回顾与成长";
+"onboarding_feature_history_subtitle_v2" = "回顾过去，构建未来。";
+
+// Onboarding Welcome Variations
+"onboarding_welcome_title_1" = "欢迎来到 Morning Goal";
+"onboarding_welcome_subtitle_1" = "你的专注之旅从这里开始。";
+"onboarding_welcome_title_2" = "准备好专注了吗？";
+"onboarding_welcome_subtitle_2" = "只需要30秒。";
+
+"onboarding_morning_window_title" = "你的早晨窗口是什么时候？";
+"onboarding_morning_window_subtitle" = "习惯是在'何时'建立的";
+"onboarding_time_from" = "从";
+"onboarding_time_to" = "到";
+"onboarding_save_settings" = "保存设置";
+"onboarding_commitment_title_1" = "我承诺每天花30秒";
+"onboarding_commitment_title_2" = "来定义我的焦点";
+"onboarding_commitment_action" = "长按3秒以承诺";
+"onboarding_commitment_holding" = "保持按住...";
+"onboarding_commitment_holding_seconds" = "保持长按%.1f秒";
+"onboarding_commitment_success" = "成功承诺";
+"onboarding_permissions_title" = "保持你的习惯";
+"onboarding_permissions_message" = "我们会在你的早晨窗口发送一个温和的提醒。\n\n这不是唠叨，这是邀请。";
+"onboarding_enable_notifications" = "启用提醒";
+"onboarding_skip" = "跳过";
+"onboarding_continue" = "继续";
+"onboarding_next" = "下一步";
+"onboarding_get_started" = "开始体验";
+"onboarding_next_slide" = "下一页";
+"onboarding_skip_for_now" = "暂时跳过";
+"onboarding_maybe_later" = "以后再说";
+"onboarding_permissions_opt_in_label" = "匿名分析（仅启动事件）";
+
+// MARK: - Today Input
+"today_goal_title_1" = "今天的唯一目标";
+"today_goal_title_2" = "准备好设置今天的焦点了吗？";
+"today_goal_title_3" = "今天最想完成什么？";
+"today_goal_title_4" = "今天要专注于什么？";
+"today_goal_title_5" = "你的今日焦点是？";
+"today_goal_title_6" = "定义今天的方向";
+"today_goal_placeholder" = "输入你的今天目标...";
+"today_goal_saved" = "已保存";
+"today_goal_saving" = "保存中...";
+"today_value_proposition" = "每天30秒，提高42%的目标实现率";
+"today_input_tip" = "💡 输入完成后点击键盘上的\"完成\"按钮保存";
+
+// MARK: - History on This Day
+"on_this_day_title_years" = "%d年前的今天";
+"on_this_day_title_week" = "1周前的今天";
+"on_this_day_title_month" = "1个月前的今天";
+
+// MARK: - History List
+"history_empty_title" = "暂无历史记录";
+"history_empty_message" = "开始记录你的第一个目标吧！";
+"history_today" = "今天";
+"history_yesterday" = "昨天";
+
+// MARK: - Streak
+"streak_days" = "%d 天";
+
+// MARK: - Debug Menu
+"debug_reset_onboarding" = "重置Onboarding";
+"debug_add_test_data" = "添加测试数据";
+"debug_reset_today" = "重设今天状态";
+"debug_set_streak" = "设置Streak天数...";
+"debug_add_on_this_day" = "添加历史上的今天数据...";
+"debug_view_on_this_day" = "查看历史上的今天数量";
+"debug_test_on_this_day_card" = "测试历史上的今天卡片";
+"debug_clear_all" = "清除所有数据";
+"debug_cancel" = "取消";
+"debug_menu_title" = "调试选项";
+
+// MARK: - Streak Settings
+"streak_settings_title" = "Streak 设置";
+"streak_settings_header" = "设置连续记录天数";
+"streak_settings_current" = "当前设置：%d 天";
+"streak_settings_tip_icon" = "💡 提示";
+"streak_settings_tip_message" = "此操作会清除现有数据，并创建连续%d天的模拟记录（不包括今天）";
+"streak_settings_confirm" = "确认设置";
+"streak_settings_cancel" = "取消";
+
+// MARK: - On This Day Settings
+"on_this_day_settings_title" = "历史上的今天";
+"on_this_day_settings_header" = "添加历史上的今天数据";
+"on_this_day_settings_years" = "添加 %d 年前的今天";
+"on_this_day_settings_tip_message" = "此操作会为过去 %d 年的今天添加模拟数据\n用于测试'历史上的今天'功能";
+"on_this_day_settings_confirm" = "确认添加";
+
+// MARK: - Common
+"year" = "年";
+"years" = "年";
+"days" = "天";
+"confirm" = "确认";
+"cancel" = "取消";
+"close" = "关闭";
+"save" = "保存";
+"done" = "完成";
+

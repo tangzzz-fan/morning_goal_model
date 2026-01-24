@@ -1,0 +1,7 @@
+git_url("git@github.com:tangzzz-fan/tangorios_apple_cert.git")
+
+storage_mode("git")
+
+type("development") # The default type, can be: appstore, adhoc, enterprise or development
+
+app_identifier(["com.tango.MorningGoal"])

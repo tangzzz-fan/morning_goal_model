@@ -1,0 +1,140 @@
+/* 
+  Localizable.strings (English)
+  MorningGoal
+*/
+
+// MARK: - Launch Screen
+"app_name" = "Morning Goal";
+"app_tagline" = "30 seconds a day, define your focus";
+
+// MARK: - Onboarding (New 6-Page Flow)
+"onboarding_page1_title" = "Boost Success by 42%";
+"onboarding_page1_subtitle" = "Research shows that simply writing down your goal significantly increases your chance of success.";
+
+"onboarding_page2_title" = "Minimalism";
+"onboarding_page2_subtitle" = "Focus on one thing. No complex todo lists, just your priority for today.";
+
+"onboarding_page3_title" = "Natural Growth";
+"onboarding_page3_subtitle" = "Build streaks, review history. Let growth happen naturally.";
+
+"onboarding_page4_title" = "Set Morning Window";
+"onboarding_page5_title" = "Make a Commitment";
+"onboarding_page6_title" = "Enable Reminders";
+
+// Old keys (kept for reference or cleanup later)
+"onboarding_welcome_title" = "Welcome";
+"onboarding_welcome_message_intro" = "30 seconds a day.";
+"onboarding_welcome_message_research" = "Research shows that writing down your goals makes you";
+"onboarding_welcome_message_stat_prefix" = "";
+"onboarding_welcome_message_stat_value" = "42% more likely to achieve them";
+
+// Onboarding Feature Carousel
+"onboarding_feature_focus_title" = "One Thing a Day";
+"onboarding_feature_focus_subtitle" = "Cut through the noise. Define your single most important goal for today.";
+"onboarding_feature_streak_title" = "Build Your Streak";
+"onboarding_feature_streak_subtitle" = "Watch the flame grow. Turn discipline into a daily habit.";
+"onboarding_feature_history_title" = "Review Your Journey";
+"onboarding_feature_history_subtitle" = "Look back at 'On This Day' to see how far you've come.";
+
+// Onboarding Feature Carousel - Variant 2
+"onboarding_feature_focus_title_v2" = "Define Your Win";
+"onboarding_feature_focus_subtitle_v2" = "What is the one thing that matters today?";
+"onboarding_feature_streak_title_v2" = "Consistency is Key";
+"onboarding_feature_streak_subtitle_v2" = "Don't break the chain. Keep showing up.";
+"onboarding_feature_history_title_v2" = "Reflect and Grow";
+"onboarding_feature_history_subtitle_v2" = "See your past self to build your future.";
+
+// Onboarding Welcome Variations
+"onboarding_welcome_title_1" = "Welcome to Morning Goal";
+"onboarding_welcome_subtitle_1" = "Your journey to focus starts here.";
+"onboarding_welcome_title_2" = "Ready to Focus?";
+"onboarding_welcome_subtitle_2" = "30 seconds is all it takes.";
+
+"onboarding_morning_window_title" = "When is your morning window?";
+"onboarding_morning_window_subtitle" = "Habits are built in the 'when'";
+"onboarding_time_from" = "From";
+"onboarding_time_to" = "To";
+"onboarding_save_settings" = "Save Settings";
+"onboarding_commitment_title_1" = "I commit to spending 30 seconds";
+"onboarding_commitment_title_2" = "every day to define my focus";
+"onboarding_commitment_action" = "Long press for 3 seconds to commit";
+"onboarding_commitment_holding" = "Keep holding...";
+"onboarding_commitment_holding_seconds" = "Keep holding %.1fs";
+"onboarding_commitment_success" = "Committed successfully";
+"onboarding_permissions_title" = "Stay on track";
+"onboarding_permissions_message" = "We'll send a gentle reminder during your morning window.\n\nThis is not nagging. This is an invitation.";
+"onboarding_enable_notifications" = "Enable Reminders";
+"onboarding_skip" = "Skip";
+"onboarding_continue" = "Continue";
+"onboarding_next" = "Next";
+"onboarding_get_started" = "Get Started";
+"onboarding_next_slide" = "Next";
+"onboarding_skip_for_now" = "Skip for now";
+"onboarding_maybe_later" = "Maybe Later";
+"onboarding_permissions_opt_in_label" = "Anonymous analytics (launch events only)";
+
+// MARK: - Today Input
+"today_goal_title_1" = "Today's Only Goal";
+"today_goal_title_2" = "Ready to set today's focus?";
+"today_goal_title_3" = "What do you want to accomplish today?";
+"today_goal_title_4" = "What will you focus on today?";
+"today_goal_title_5" = "Your focus for today?";
+"today_goal_title_6" = "Define today's direction";
+"today_goal_placeholder" = "Enter your goal for today...";
+"today_goal_saved" = "Saved";
+"today_goal_saving" = "Saving...";
+"today_value_proposition" = "30 seconds a day, 42% more likely to achieve";
+"today_input_tip" = "💡 Tap 'Done' on keyboard to save";
+
+// MARK: - History on This Day
+"on_this_day_title_years" = "%d year(s) ago today";
+"on_this_day_title_week" = "1 week ago today";
+"on_this_day_title_month" = "1 month ago today";
+
+// MARK: - History List
+"history_empty_title" = "No history yet";
+"history_empty_message" = "Start recording your first goal!";
+"history_today" = "Today";
+"history_yesterday" = "Yesterday";
+
+// MARK: - Streak
+"streak_days" = "%d days";
+
+// MARK: - Debug Menu
+"debug_reset_onboarding" = "Reset Onboarding";
+"debug_add_test_data" = "Add Test Data";
+"debug_reset_today" = "Reset Today's Status";
+"debug_set_streak" = "Set Streak Days...";
+"debug_add_on_this_day" = "Add On This Day Data...";
+"debug_view_on_this_day" = "View On This Day Count";
+"debug_test_on_this_day_card" = "Test On This Day Card";
+"debug_clear_all" = "Clear All Data";
+"debug_cancel" = "Cancel";
+"debug_menu_title" = "Debug Options";
+
+// MARK: - Streak Settings
+"streak_settings_title" = "Streak Settings";
+"streak_settings_header" = "Set Consecutive Days";
+"streak_settings_current" = "Current: %d days";
+"streak_settings_tip_icon" = "💡 Tip";
+"streak_settings_tip_message" = "This will clear existing data and create %d consecutive records (excluding today)";
+"streak_settings_confirm" = "Confirm";
+"streak_settings_cancel" = "Cancel";
+
+// MARK: - On This Day Settings
+"on_this_day_settings_title" = "On This Day";
+"on_this_day_settings_header" = "Add On This Day Data";
+"on_this_day_settings_years" = "Add %d year(s) ago";
+"on_this_day_settings_tip_message" = "This will add mock data for %d year(s) ago\nFor testing 'On This Day' feature";
+"on_this_day_settings_confirm" = "Add";
+
+// MARK: - Common
+"year" = "year";
+"years" = "years";
+"days" = "days";
+"confirm" = "Confirm";
+"cancel" = "Cancel";
+"close" = "Close";
+"save" = "Save";
+"done" = "Done";
+

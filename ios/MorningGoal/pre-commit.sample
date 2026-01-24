@@ -1,0 +1,98 @@
+#!/bin/sh
+#
+# Git Pre-commit Hook for MorningGoal
+# 在提交前自动运行 SwiftLint 和 SwiftFormat 检查
+#
+# 安装方法：
+# cp pre-commit.sample ../.git/hooks/pre-commit
+# chmod +x ../.git/hooks/pre-commit
+
+echo "🔍 运行 pre-commit 检查..."
+
+# 进入项目目录
+cd "$(git rev-parse --show-toplevel)/MorningGoal" || exit 1
+
+# 标记是否有错误
+HAS_ERROR=0
+
+# 1. 运行 SwiftLint
+echo "📝 检查代码质量 (SwiftLint)..."
+if command -v swiftlint >/dev/null 2>&1; then
+    # 只检查暂存的 Swift 文件
+    SWIFT_FILES=$(git diff --cached --name-only --diff-filter=d | grep "\.swift$" || true)
+    
+    if [ -n "$SWIFT_FILES" ]; then
+        echo "检查文件:"
+        echo "$SWIFT_FILES"
+        
+        # 运行 SwiftLint
+        if ! swiftlint lint --quiet --config .swiftlint.yml $SWIFT_FILES; then
+            echo "❌ SwiftLint 发现问题，请修复后再提交"
+            echo "提示: 运行 'make lint-fix' 自动修复部分问题"
+            HAS_ERROR=1
+        fi
+    fi
+else
+    echo "⚠️  SwiftLint 未安装，跳过检查"
+    echo "安装命令: brew install swiftlint"
+fi
+
+# 2. 运行 SwiftFormat 检查
+echo "🎨 检查代码格式 (SwiftFormat)..."
+if command -v swiftformat >/dev/null 2>&1; then
+    # 只检查暂存的 Swift 文件
+    SWIFT_FILES=$(git diff --cached --name-only --diff-filter=d | grep "\.swift$" || true)
+    
+    if [ -n "$SWIFT_FILES" ]; then
+        # 检查格式
+        if ! swiftformat --config .swiftformat --lint $SWIFT_FILES; then
+            echo "❌ SwiftFormat 发现格式问题"
+            echo "提示: 运行 'make format' 自动格式化代码"
+            HAS_ERROR=1
+        fi
+    fi
+else
+    echo "⚠️  SwiftFormat 未安装，跳过检查"
+    echo "安装命令: brew install swiftformat"
+fi
+
+# 3. 检查是否有大文件
+echo "📦 检查文件大小..."
+LARGE_FILES=$(git diff --cached --name-only --diff-filter=d | while read file; do
+    if [ -f "$file" ]; then
+        SIZE=$(wc -c < "$file")
+        if [ $SIZE -gt 1048576 ]; then  # 1MB
+            echo "$file ($(($SIZE / 1024))KB)"
+        fi
+    fi
+done)
+
+if [ -n "$LARGE_FILES" ]; then
+    echo "⚠️  发现大文件 (>1MB):"
+    echo "$LARGE_FILES"
+    echo "请确认是否真的需要提交这些大文件"
+fi
+
+# 4. 检查是否有调试代码
+echo "🔍 检查调试代码..."
+DEBUG_CODE=$(git diff --cached --name-only --diff-filter=d | grep "\.swift$" | xargs grep -n "print(" 2>/dev/null || true)
+
+if [ -n "$DEBUG_CODE" ]; then
+    echo "⚠️  发现 print() 调试代码:"
+    echo "$DEBUG_CODE"
+    echo "建议移除或使用 Logger"
+fi
+
+# 返回结果
+if [ $HAS_ERROR -eq 1 ]; then
+    echo ""
+    echo "❌ Pre-commit 检查失败，请修复问题后再提交"
+    echo ""
+    echo "如需跳过检查强制提交，使用: git commit --no-verify"
+    exit 1
+else
+    echo ""
+    echo "✅ Pre-commit 检查通过！"
+    exit 0
+fi
+

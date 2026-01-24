@@ -1,0 +1,56 @@
+# SwiftFormat Configuration for MorningGoal
+
+# 版本
+--swiftversion 5.0
+
+# 排除的目录和文件
+--exclude Pods,Carthage,.build,DerivedData,vendor,fastlane,MorningGoal.xcodeproj,coreml
+
+# 缩进
+--indent 4
+--tabwidth 4
+--indentcase false
+--ifdef no-indent
+
+# 空格
+--trimwhitespace always
+--commas inline
+--wraparguments before-first
+--wrapparameters before-first
+--wrapcollections before-first
+--closingparen balanced
+
+# 换行
+--maxwidth 150
+--linebreaks lf
+
+# 括号
+--stripunusedargs closure-only
+--elseposition same-line
+--guardelse auto
+
+# 分号
+--semicolons never
+
+# 空行
+--emptybraces no-space
+--allman false
+
+# 导入
+--importgrouping testable-top
+
+# 其他格式化选项（移除不兼容项）
+
+# 启用的规则
+--enable isEmpty
+--enable sortedImports
+--enable trailingCommas
+--enable wrapMultilineStatementBraces
+--enable redundantReturn
+--enable redundantExtensionACL
+--enable redundantVoidReturnType
+
+# 禁用的规则
+--disable andOperator
+--disable redundantSelf
+--disable wrapArguments

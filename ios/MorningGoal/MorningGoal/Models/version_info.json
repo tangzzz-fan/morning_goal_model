@@ -1,0 +1,9 @@
+{
+  "model_path": "models/GoalClassifier.mlpackage",
+  "md5_hash": "8ca2226509fca4509c765823a546c054",
+  "format": "mlpackage",
+  "quantized": false,
+  "deployment_target": "iOS15",
+  "created_at": "2024-01-01",
+  "pytorch_model": "models/bert_goal_classifier.pt"
+}
