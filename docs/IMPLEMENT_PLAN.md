@@ -15,7 +15,7 @@
                            ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │              BertFeatureExtractor.mlpackage (静态)               │
-│                       → 512维 Embedding                         │
+│                       → 768维 Embedding                         │
 └──────────────────────────┬──────────────────────────────────────┘
                            │
     ┌────────┬────────┬────┴────┬────────┬────────┬────────┐
@@ -23,15 +23,15 @@
 ┌───────┐┌───────┐┌───────┐┌───────┐┌───────┐┌───────┐┌───────┐
 │Topic  ││Senti- ││Urgency││Time-  ││Action-││Diffi- ││Speci- │
 │(16cls)││ment   ││(3cls) ││Frame  ││Type   ││culty  ││ficity │
-│  ✏️   ││(3cls) ││  ✏️   ││(4cls) ││(6cls) ││(3cls) ││(3cls) │
-│       ││  ✏️   ││       ││  ✏️   ││  ✏️   ││  ✏️   ││  ✏️   │
+│  ✅   ││(3cls) ││  ✅   ││(4cls) ││(5cls) ││(3cls) ││(3cls) │
+│       ││  ✅   ││       ││  ✅   ││  ✅   ││  ✅   ││  ✅   │
 └───┬───┘└───┬───┘└───┬───┘└───┬───┘└───┬───┘└───┬───┘└───┬───┘
     │        │        │        │        │        │        │
     └────────┴────────┴────┬───┴────────┴────────┴────────┘
                            │
                            ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                    GoalDataAggregator                           │
+│                    GoalDataAggregator (待实现)                   │
 │                   (Core Data / SQLite)                          │
 └──────────────────────────┬──────────────────────────────────────┘
                            │
@@ -40,21 +40,117 @@
 ┌───────────┐       ┌───────────┐          ┌───────────┐
 │Pattern    │       │Balance    │          │Trend      │
 │Analyzer   │       │Advisor    │          │Analyzer   │
+│ (待实现)  │       │ (待实现)  │          │ (待实现)  │
 └─────┬─────┘       └─────┬─────┘          └─────┬─────┘
       │                   │                      │
       └───────────────────┼──────────────────────┘
                           ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                    InsightGenerator                             │
+│                    InsightGenerator (待实现)                     │
 │                  (规则引擎 + 模板系统)                           │
 └──────────────────────────┬──────────────────────────────────────┘
                            │
                            ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                   InsightDashboardView                          │
+│                   InsightDashboardView (待实现)                  │
 │               (洞察卡片 + 趋势图表 + 统计)                       │
 └─────────────────────────────────────────────────────────────────┘
 ```
+
+**图例**: ✅ 已完成
+
+---
+
+## 当前进度
+
+### 已完成 ✅
+
+| 阶段 | 内容 | 状态 |
+|------|------|------|
+| Phase 1 | 数据准备 & 标注 | ✅ 完成 |
+| Phase 2 | 训练 7 个分类器 | ✅ 完成 |
+| Phase 3 | CoreML 导出 | ✅ 完成 |
+| Phase 3.5 | iOS 模型集成 & 调试界面 | ✅ 完成 |
+| Phase 4.1-4.2 | Core Data 模型扩展 & AnalysisResult | ✅ 完成 |
+
+### 待开始 ⏳
+
+| 阶段 | 内容 | 优先级 |
+|------|------|--------|
+| Phase 4.3 | GoalDataAggregator 聚合服务 | P0 |
+| Phase 5 | 洞察引擎 | P0 |
+| Phase 6 | UI 开发 | P1 |
+| Phase 7 | 测试 & 优化 | P1 |
+
+---
+
+## Phase 3.5: iOS 模型集成 (已完成) ✅
+
+### 3.5.1 已实现的服务
+
+#### InsightModelManager.swift
+
+核心模型管理服务，负责加载和推理。
+
+```swift
+// 关键 API
+class InsightModelManager: ObservableObject {
+    @Published var isInitialized: Bool
+    @Published var loadedClassifiers: [String]
+    @Published var statusMessage: String
+    
+    // 初始化并加载模型
+    func loadModels() async
+    
+    // 分析文本，返回 7 维度分类结果
+    func analyze(text: String) async throws -> InsightAnalysisResult
+    
+    // 训练后重新加载模型（不删除更新）
+    func reloadModelsAfterTraining() async
+    
+    // 重置所有分类器（删除更新，恢复原始）
+    func resetAllClassifiers()
+}
+```
+
+**关键特性**:
+- 使用 `swift-transformers` 的 `AutoTokenizer` 进行 BERT 分词
+- 并行推理 7 个分类器 (TaskGroup)
+- 模型更新后路径: `{Name}Classifier_Updatable_Updated.mlmodelc`
+
+#### InsightUpdateManager.swift
+
+设备端训练管理，支持用户纠正后的模型更新。
+
+```swift
+// 关键 API
+class InsightUpdateManager: ObservableObject {
+    @Published var isTraining: Bool
+    @Published var trainingProgress: Double
+    
+    // 添加训练样本
+    func addTrainingSample(_ sample: InsightTrainingSample)
+    
+    // 更新所有模型
+    func updateAllModels() async throws
+}
+```
+
+**关键特性**:
+- 使用 `MLUpdateTask` 进行设备端训练
+- 支持批量训练样本
+- 模型保存路径与 InsightModelManager 一致
+
+#### InsightModelDebugTab.swift
+
+调试界面，用于测试模型和用户纠正。
+
+**功能**:
+- 模型加载状态显示 (x/7)
+- 文本分析测试
+- 7 维度结果展示
+- 用户纠正 (Picker)
+- 训练功能
 
 ---
 
@@ -62,61 +158,74 @@
 
 ### 4.1 目标
 
-实现用户目标数据的持久化存储和聚合查询。
+扩展现有 Core Data 模型以支持 7 维度分类结果的持久化存储和聚合查询。
 
-### 4.2 技术选型
+### 4.2 Core Data 模型扩展 ✅ (已完成)
 
-| 方案 | 推荐 | 理由 |
-|------|------|------|
-| **Core Data** | ✅ | 官方支持, 与 SwiftUI 集成好, 支持 CloudKit |
-| SQLite | ⭐ | 轻量, 跨平台, 查询灵活 |
-| GRDB | ⭐ | Swift 友好的 SQLite 封装 |
-
-**推荐: Core Data** (可选 GRDB 作为备选)
-
-### 4.3 数据模型设计
+`GoalEntry` 实体已扩展，新增以下字段：
 
 ```swift
-// GoalRecord.swift
-import Foundation
-import CoreData
+// GoalEntry.swift - 已实现
+@objc(GoalEntry)
+final class GoalEntry: NSManagedObject, Identifiable {
+    // 基础字段
+    @NSManaged var dateString: String
+    @NSManaged var goalText: String
+    @NSManaged var lastUpdated: Date
 
-@objc(GoalRecord)
-public class GoalRecord: NSManagedObject {
-    @NSManaged public var id: UUID
-    @NSManaged public var text: String
-    @NSManaged public var timestamp: Date
-    @NSManaged public var embedding: Data?
+    // 分类结果 - Topic (主题) - 对应 category
+    @NSManaged var category: String?
+    @NSManaged var categoryConfidence: Double
     
-    // 分类结果 (7个维度)
-    @NSManaged public var topic: String?
-    @NSManaged public var topicConfidence: Float
-    @NSManaged public var sentiment: String?
-    @NSManaged public var sentimentConfidence: Float
-    @NSManaged public var urgency: String?
-    @NSManaged public var urgencyConfidence: Float
-    @NSManaged public var timeFrame: String?
-    @NSManaged public var timeFrameConfidence: Float
-    @NSManaged public var actionType: String?
-    @NSManaged public var actionTypeConfidence: Float
-    @NSManaged public var difficulty: String?
-    @NSManaged public var difficultyConfidence: Float
-    @NSManaged public var specificity: String?
-    @NSManaged public var specificityConfidence: Float
+    // 分类结果 - Sentiment (情感)
+    @NSManaged var sentiment: String?
+    @NSManaged var sentimentScore: Double
     
-    // 用户反馈
-    @NSManaged public var isCompleted: NSNumber?
-    @NSManaged public var completedAt: Date?
-    @NSManaged public var userRating: Int16
+    // 分类结果 - Urgency (紧急度) ✅ 新增
+    @NSManaged var urgency: String?
+    @NSManaged var urgencyConfidence: Double
     
-    // 用户纠正
-    @NSManaged public var userCorrectedTopic: String?
-    @NSManaged public var userCorrectedSentiment: String?
-    // ... 其他纠正字段
+    // 分类结果 - TimeFrame (时间范围) ✅ 新增
+    @NSManaged var timeFrame: String?
+    @NSManaged var timeFrameConfidence: Double
+    
+    // 分类结果 - ActionType (行动类型) ✅ 新增
+    @NSManaged var actionType: String?
+    @NSManaged var actionTypeConfidence: Double
+    
+    // 分类结果 - Difficulty (难度) ✅ 新增
+    @NSManaged var difficulty: String?
+    @NSManaged var difficultyConfidence: Double
+    
+    // 分类结果 - Specificity (具体程度) ✅ 新增
+    @NSManaged var specificity: String?
+    @NSManaged var specificityConfidence: Double
+    
+    // Embedding (可选，用于相似度搜索) ✅ 新增
+    @NSManaged var embedding: Data?
+    
+    // 用户纠正字段 ✅ 新增
+    @NSManaged var urgencyUserCorrected: String?
+    @NSManaged var timeFrameUserCorrected: String?
+    @NSManaged var actionTypeUserCorrected: String?
+    @NSManaged var difficultyUserCorrected: String?
+    @NSManaged var specificityUserCorrected: String?
+    
+    // 有效值访问器 (优先用户纠正)
+    var effectiveUrgency: String? { urgencyUserCorrected ?? urgency }
+    var effectiveTimeFrame: String? { timeFrameUserCorrected ?? timeFrame }
+    var effectiveActionType: String? { actionTypeUserCorrected ?? actionType }
+    var effectiveDifficulty: String? { difficultyUserCorrected ?? difficulty }
+    var effectiveSpecificity: String? { specificityUserCorrected ?? specificity }
+    var hasUserCorrections: Bool { /* ... */ }
 }
 ```
 
-### 4.4 GoalDataAggregator 接口
+**同时更新的文件**:
+- `CoreDataModelBuilder.swift` - 添加新属性定义
+- `CoreMLAnalysisService.swift` - `AnalysisResult` 结构扩展
+
+### 4.3 GoalDataAggregator 接口
 
 ```swift
 // GoalDataAggregator.swift
@@ -133,8 +242,8 @@ protocol GoalDataAggregating {
     /// 获取完成率
     func getCompletionRate(groupBy: String, period: TimePeriod) -> [String: Double]
     
-    /// 获取相似目标
-    func getSimilarGoals(embedding: [Float], limit: Int) -> [GoalRecord]
+    /// 获取相似目标 (可选)
+    func getSimilarGoals(embedding: [Float], limit: Int) -> [GoalEntry]
 }
 
 struct AggregatedStats {
@@ -147,16 +256,23 @@ struct AggregatedStats {
     let actionTypeDistribution: [String: Int]
     let difficultyDistribution: [String: Int]
     let specificityDistribution: [String: Int]
+    let timeFrameDistribution: [String: Int]
 }
 ```
 
-### 4.5 实施步骤
+### 4.4 实施步骤
 
-1. **创建 Core Data 模型文件** (`MorningGoal.xcdatamodeld`)
-2. **定义 GoalRecord 实体及属性**
-3. **创建 CoreDataStack 管理类**
-4. **实现 GoalDataAggregator**
-5. **添加单元测试**
+1. **扩展 Core Data 模型文件** (`MorningGoal.xcdatamodeld`)
+   - 添加 14 个新属性 (7 维度 × 2: label + confidence)
+   
+2. **更新 GoalEntry 扩展**
+   - 生成新的 `GoalEntry+CoreDataProperties.swift`
+   
+3. **创建 GoalDataAggregator**
+   - 实现基础聚合查询
+   
+4. **集成到现有流程**
+   - 保存目标时同时保存分类结果
 
 ---
 
@@ -164,17 +280,15 @@ struct AggregatedStats {
 
 ### 5.1 目标
 
-基于规则引擎生成个性化用户洞察。
+基于规则引擎生成个性化用户洞察。采用设计文档推荐的 **混合架构**。
 
 ### 5.2 技术选型
 
-采用 **混合架构** (设计文档 8.4 推荐方案):
-
-| 层级 | 技术 | 覆盖场景 |
-|------|------|---------|
-| **第一层** | 规则引擎 | 实时统计洞察、模式提醒、趋势警告 |
-| **第二层** | 端侧 LLM (可选) | 目标优化建议、个性化鼓励 (iOS 18.1+) |
-| **第三层** | 云端 LLM (可选) | 周报/月报深度分析 |
+| 层级 | 技术 | 覆盖场景 | 阶段 |
+|------|------|---------|------|
+| **第一层** | 规则引擎 | 实时统计、模式提醒、趋势警告 | MVP |
+| **第二层** | 端侧 LLM | 目标优化建议 (iOS 18.1+) | V1.1 |
+| **第三层** | 云端 LLM | 周报/月报深度分析 | V1.2 |
 
 **MVP 阶段: 仅实现第一层规则引擎**
 
@@ -192,67 +306,41 @@ enum InsightType: String, CaseIterable {
 }
 ```
 
-### 5.4 洞察模板示例
+### 5.4 分析器设计
 
 ```swift
-let insightTemplates: [InsightTemplate] = [
-    // 模式识别
-    InsightTemplate(
-        id: "weekday_pattern",
-        type: .pattern,
-        condition: { stats, _ in hasWeekdayPattern(stats) },
-        titleTemplate: "发现周期模式",
-        descriptionTemplate: "您通常在{weekday}设定较多{topic}类目标"
-    ),
+// PatternAnalyzer.swift
+class PatternAnalyzer {
+    /// 识别周期性模式 (如: 周一多运动目标)
+    func analyzeWeekdayPatterns(records: [GoalEntry]) -> [Insight]
     
-    // 平衡建议
-    InsightTemplate(
-        id: "type_imbalance",
-        type: .balance,
-        condition: { stats, _ in stats.actionTypeDistribution.values.max()! > stats.totalGoals * 0.6 },
-        titleTemplate: "目标类型较为集中",
-        descriptionTemplate: "本周{actionType}类目标占比{percentage}%，建议适当增加{suggestion}类目标"
-    ),
+    /// 识别高频重复目标
+    func findRecurringGoals(records: [GoalEntry]) -> [Insight]
+}
+
+// BalanceAdvisor.swift
+class BalanceAdvisor {
+    /// 检测目标类型不平衡
+    func checkBalance(stats: AggregatedStats) -> [Insight]
+}
+
+// TrendAnalyzer.swift
+class TrendAnalyzer {
+    /// 分析情感趋势
+    func analyzeSentimentTrend(dailyStats: [DailyStats]) -> [Insight]
     
-    // 趋势分析
-    InsightTemplate(
-        id: "sentiment_up",
-        type: .trend,
-        condition: { stats, _ in stats.sentimentChange > 0.15 },
-        titleTemplate: "积极趋势",
-        descriptionTemplate: "近一周积极情绪占比提升了{change}%，继续保持！"
-    ),
-    
-    // 可达成性评估
-    InsightTemplate(
-        id: "goal_too_vague",
-        type: .achievability,
-        condition: { _, goal in goal?.difficulty == "hard" && goal?.specificity == "vague" },
-        titleTemplate: "目标可能需要细化",
-        descriptionTemplate: "这个目标有挑战性但描述较为模糊，具体化的目标更容易实现"
-    ),
-    
-    // 完成率预测
-    InsightTemplate(
-        id: "low_completion_warning",
-        type: .completion,
-        condition: { stats, goal in getSimilarCompletionRate(goal) < 0.3 },
-        titleTemplate: "历史参考",
-        descriptionTemplate: "类似目标历史完成率为{rate}%，可以考虑调整或分解目标"
-    ),
-    
-    // 鼓励激励
-    InsightTemplate(
-        id: "streak_encouragement",
-        type: .encouragement,
-        condition: { stats, _ in stats.consecutiveDays >= 7 },
-        titleTemplate: "坚持的力量",
-        descriptionTemplate: "您已连续{days}天设定目标，太棒了！"
-    ),
-]
+    /// 分析目标数量趋势
+    func analyzeVolumeTrend(dailyStats: [DailyStats]) -> [Insight]
+}
+
+// AchievabilityPredictor.swift
+class AchievabilityPredictor {
+    /// 评估当前目标的可达成性
+    func evaluateGoal(goal: GoalEntry, historicalRecords: [GoalEntry]) -> [Insight]
+}
 ```
 
-### 5.5 InsightGenerator 实现
+### 5.5 InsightGenerator
 
 ```swift
 class InsightGenerator {
@@ -262,15 +350,18 @@ class InsightGenerator {
     let achievabilityPredictor = AchievabilityPredictor()
     
     func generateInsights(
-        for goal: GoalRecord?,
+        for goal: GoalEntry?,
         stats: AggregatedStats,
-        historicalRecords: [GoalRecord]
+        historicalRecords: [GoalEntry]
     ) -> [Insight] {
         var allInsights: [Insight] = []
         
         // 1. 针对当前目标的洞察
         if let goal = goal {
-            allInsights += achievabilityPredictor.evaluateGoal(goal: goal, historicalRecords: historicalRecords)
+            allInsights += achievabilityPredictor.evaluateGoal(
+                goal: goal, 
+                historicalRecords: historicalRecords
+            )
         }
         
         // 2. 周期性洞察
@@ -290,34 +381,84 @@ class InsightGenerator {
 }
 ```
 
-### 5.6 实施步骤
+### 5.6 洞察模板示例
 
-1. **定义 Insight 数据结构**
-2. **实现 PatternAnalyzer**
-3. **实现 BalanceAdvisor**
-4. **实现 TrendAnalyzer**
-5. **实现 AchievabilityPredictor**
-6. **实现 InsightGenerator**
-7. **创建洞察模板库**
-8. **添加单元测试**
+```swift
+let insightTemplates: [InsightTemplate] = [
+    // 模式识别
+    InsightTemplate(
+        id: "weekday_pattern",
+        type: .pattern,
+        condition: { stats, _ in hasWeekdayPattern(stats) },
+        titleTemplate: "发现周期模式",
+        descriptionTemplate: "您通常在{weekday}设定较多{topic}类目标"
+    ),
+    
+    // 平衡建议
+    InsightTemplate(
+        id: "type_imbalance",
+        type: .balance,
+        condition: { stats, _ in 
+            stats.actionTypeDistribution.values.max()! > stats.totalGoals * 0.6 
+        },
+        titleTemplate: "目标类型较为集中",
+        descriptionTemplate: "本周{actionType}类目标占比{percentage}%，建议增加{suggestion}类目标"
+    ),
+    
+    // 趋势分析
+    InsightTemplate(
+        id: "sentiment_up",
+        type: .trend,
+        condition: { stats, _ in stats.sentimentChange > 0.15 },
+        titleTemplate: "积极趋势",
+        descriptionTemplate: "近一周积极情绪占比提升了{change}%，继续保持！"
+    ),
+    
+    // 可达成性评估
+    InsightTemplate(
+        id: "goal_too_vague",
+        type: .achievability,
+        condition: { _, goal in 
+            goal?.difficulty == "hard" && goal?.specificity == "vague" 
+        },
+        titleTemplate: "目标可能需要细化",
+        descriptionTemplate: "这个目标有挑战性但描述较为模糊，具体化更容易实现"
+    ),
+    
+    // 鼓励激励
+    InsightTemplate(
+        id: "streak_encouragement",
+        type: .encouragement,
+        condition: { stats, _ in stats.consecutiveDays >= 7 },
+        titleTemplate: "坚持的力量",
+        descriptionTemplate: "您已连续{days}天设定目标，太棒了！"
+    ),
+]
+```
+
+### 5.7 实施步骤
+
+1. **定义数据结构** - `Insight`, `InsightType`, `InsightTemplate`
+2. **实现 PatternAnalyzer** - 周期模式识别
+3. **实现 BalanceAdvisor** - 平衡检测
+4. **实现 TrendAnalyzer** - 趋势分析
+5. **实现 AchievabilityPredictor** - 可达成性评估
+6. **实现 InsightGenerator** - 综合生成器
+7. **创建模板库** - 10-20 个预定义模板
 
 ---
 
 ## Phase 6: UI 开发
 
-### 6.1 目标
-
-创建洞察展示界面，提供直观的数据可视化。
-
-### 6.2 技术选型
+### 6.1 技术选型
 
 | 组件 | 技术 | 说明 |
 |------|------|------|
-| UI 框架 | SwiftUI | 声明式 UI, 与 iOS 16+ 特性兼容 |
+| UI 框架 | SwiftUI | 声明式 UI |
 | 图表 | Swift Charts | iOS 16+ 原生图表库 |
-| 动画 | SwiftUI Animation | 流畅的过渡动画 |
+| 动画 | SwiftUI Animation | 流畅过渡 |
 
-### 6.3 UI 组件结构
+### 6.2 UI 组件结构
 
 ```
 InsightDashboardView
@@ -334,7 +475,7 @@ InsightDashboardView
 └── GoalDistributionChart   # 目标分布饼图
 ```
 
-### 6.4 InsightCard 设计
+### 6.3 InsightCard 设计
 
 ```swift
 struct InsightCard: View {
@@ -372,7 +513,7 @@ struct InsightCard: View {
 }
 ```
 
-### 6.5 趋势图表
+### 6.4 趋势图表
 
 ```swift
 import Charts
@@ -406,16 +547,15 @@ struct SentimentTrendChart: View {
 }
 ```
 
-### 6.6 实施步骤
+### 6.5 实施步骤
 
-1. **创建 InsightDashboardView 主视图**
-2. **实现 QuickStatsCard 组件**
-3. **实现 InsightCard 组件**
-4. **实现 SentimentTrendChart**
-5. **实现 GoalDistributionChart**
+1. **创建 InsightDashboardView** 主视图
+2. **实现 QuickStatsCard** 统计卡片
+3. **实现 InsightCard** 洞察卡片
+4. **实现 SentimentTrendChart** 趋势图
+5. **实现 GoalDistributionChart** 分布图
 6. **创建 InsightViewModel**
-7. **添加动画和交互**
-8. **适配深色模式**
+7. **集成到 RootView**
 
 ---
 
@@ -442,7 +582,7 @@ struct SentimentTrendChart: View {
 ### 7.3 优化策略
 
 1. **推理优化**
-   - 使用 `DispatchGroup` 并行执行 7 个分类器
+   - 使用 `TaskGroup` 并行执行 7 个分类器 ✅ 已实现
    - 预加载模型到内存
    - 使用 Neural Engine (ANE) 加速
 
@@ -461,24 +601,28 @@ struct SentimentTrendChart: View {
 
 ### 里程碑
 
-| 阶段 | 预计工时 | 优先级 |
-|-----|---------|-------|
-| Phase 4: 数据层 | 3-4 天 | P0 |
-| Phase 5: 洞察引擎 | 4-5 天 | P0 |
-| Phase 6: UI 开发 | 4-5 天 | P1 |
-| Phase 7: 测试优化 | 3-4 天 | P1 |
-| **总计** | **14-18 天** | - |
+| 阶段 | 预计工时 | 优先级 | 状态 |
+|-----|---------|-------|------|
+| Phase 1-3: 模型训练导出 | - | P0 | ✅ 完成 |
+| Phase 3.5: iOS 模型集成 | - | P0 | ✅ 完成 |
+| Phase 4.1-4.2: Core Data 扩展 | - | P0 | ✅ 完成 |
+| Phase 4.3: GoalDataAggregator | 2-3 天 | P0 | ⏳ 待开始 |
+| Phase 5: 洞察引擎 | 4-5 天 | P0 | ⏳ 待开始 |
+| Phase 6: UI 开发 | 4-5 天 | P1 | ⏳ 待开始 |
+| Phase 7: 测试优化 | 3-4 天 | P1 | ⏳ 待开始 |
+| **剩余总计** | **14-18 天** | - | - |
 
 ### 依赖关系
 
 ```mermaid
 graph LR
-    A[Phase 4: 数据层] --> B[Phase 5: 洞察引擎]
-    B --> C[Phase 6: UI 开发]
-    C --> D[Phase 7: 测试优化]
+    A[Phase 3.5: 模型集成 ✅] --> B[Phase 4: 数据层]
+    B --> C[Phase 5: 洞察引擎]
+    C --> D[Phase 6: UI 开发]
+    D --> E[Phase 7: 测试优化]
     
-    A --> E[Phase 5 可并行开始部分工作]
-    B --> F[Phase 6 可并行开始 UI 框架]
+    B --> F[Phase 5 可并行开始部分工作]
+    C --> G[Phase 6 可并行开始 UI 框架]
 ```
 
 ---
@@ -487,7 +631,7 @@ graph LR
 
 | 风险 | 影响 | 缓解措施 |
 |-----|------|---------|
-| 分类器准确率不足 | 洞察质量差 | 收集用户反馈, 端侧更新 |
+| 分类器准确率不足 | 洞察质量差 | 收集用户反馈, 端侧更新 ✅ 已支持 |
 | 推理延迟过高 | 用户体验差 | 使用 ANE, 异步加载 |
 | 规则覆盖不全 | 洞察类型有限 | 模板系统可扩展, 后续迭代 |
 | 数据不足 | 洞察不准确 | 设置最小数据量阈值 |
@@ -502,3 +646,49 @@ graph LR
 | V1.2 | 云端 LLM 周报功能 | P2 |
 | V2.0 | 完整混合架构 (规则 + 端侧 + 云端) | P3 |
 | V2.1 | 社交对比功能 (可选) | P3 |
+
+---
+
+## 附录: 已完成文件清单
+
+### iOS 项目结构
+
+```
+ios/MorningGoal/MorningGoal/
+├── Services/
+│   ├── InsightModelManager.swift      # ✅ 模型加载与推理
+│   └── InsightUpdateManager.swift     # ✅ 设备端训练
+├── Models/
+│   └── InsightClassifierLabels.swift  # ✅ 标签定义
+├── Views/
+│   └── InsightModelDebugTab.swift     # ✅ 调试界面
+├── coreml/
+│   ├── BertFeatureExtractor.mlpackage          # ✅
+│   ├── TopicClassifier_Updatable.mlpackage     # ✅
+│   ├── SentimentClassifier_Updatable.mlpackage # ✅
+│   ├── UrgencyClassifier_Updatable.mlpackage   # ✅
+│   ├── TimeFrameClassifier_Updatable.mlpackage # ✅
+│   ├── ActionTypeClassifier_Updatable.mlpackage# ✅
+│   ├── DifficultyClassifier_Updatable.mlpackage# ✅
+│   └── SpecificityClassifier_Updatable.mlpackage# ✅
+└── docs/
+    └── Insight_Model_Walkthrough.md   # ✅ 技术文档
+```
+
+### 模型训练项目结构
+
+```
+MorningGoalModel/
+├── src/
+│   ├── training/
+│   │   └── train_insight_classifiers.py  # ✅
+│   └── export/
+│       └── export_insight_classifiers.py # ✅
+├── models/
+│   ├── trained/insight_classifiers/      # ✅
+│   └── exported_coreml/                  # ✅
+└── docs/
+    ├── User_Insight_System_Design.md     # ✅ 设计文档
+    ├── TASK.md                           # ✅ 任务清单
+    └── IMPLEMENT_PLAN.md                 # ✅ 实施计划
+```

@@ -16,30 +16,93 @@ enum CoreDataModelBuilder {
         goalEntry.managedObjectClassName = NSStringFromClass(GoalEntry.self)
 
         // CloudKit requires: all non-optional attributes must have default values
+
+        // MARK: - 基础字段
+
         let geDateString = attrString("dateString", optional: false, defaultValue: "")
         let geGoalText = attrString("goalText", optional: false, defaultValue: "")
         let geLastUpdated = attrDate("lastUpdated", optional: false, defaultValue: Date())
+
+        // MARK: - 分析结果字段 (7个维度)
+
+        // Topic (主题) - 对应 category
         let geCategory = attrString("category", optional: true)
         let geCategoryConfidence = attrDouble("categoryConfidence", defaultValue: 0.0)
+
+        // Sentiment (情感)
         let geSentiment = attrString("sentiment", optional: true)
         let geSentimentScore = attrDouble("sentimentScore", defaultValue: 0.0)
+
+        // Urgency (紧急度) - 新增
+        let geUrgency = attrString("urgency", optional: true)
+        let geUrgencyConfidence = attrDouble("urgencyConfidence", defaultValue: 0.0)
+
+        // TimeFrame (时间范围) - 新增
+        let geTimeFrame = attrString("timeFrame", optional: true)
+        let geTimeFrameConfidence = attrDouble("timeFrameConfidence", defaultValue: 0.0)
+
+        // ActionType (行动类型) - 新增
+        let geActionType = attrString("actionType", optional: true)
+        let geActionTypeConfidence = attrDouble("actionTypeConfidence", defaultValue: 0.0)
+
+        // Difficulty (难度) - 新增
+        let geDifficulty = attrString("difficulty", optional: true)
+        let geDifficultyConfidence = attrDouble("difficultyConfidence", defaultValue: 0.0)
+
+        // Specificity (具体程度) - 新增
+        let geSpecificity = attrString("specificity", optional: true)
+        let geSpecificityConfidence = attrDouble("specificityConfidence", defaultValue: 0.0)
+
+        // 分析时间
         let geAnalyzedAt = attrDate("analyzedAt", optional: true, defaultValue: nil)
+
+        // Embedding (可选，用于相似度搜索)
+        let geEmbedding = attrBinary("embedding", optional: true)
+
+        // MARK: - 用户纠正字段
+
         let geCategoryUserCorrected = attrString("categoryUserCorrected", optional: true)
         let geSentimentUserCorrected = attrString("sentimentUserCorrected", optional: true)
+        let geUrgencyUserCorrected = attrString("urgencyUserCorrected", optional: true)
+        let geTimeFrameUserCorrected = attrString("timeFrameUserCorrected", optional: true)
+        let geActionTypeUserCorrected = attrString("actionTypeUserCorrected", optional: true)
+        let geDifficultyUserCorrected = attrString("difficultyUserCorrected", optional: true)
+        let geSpecificityUserCorrected = attrString("specificityUserCorrected", optional: true)
         let geCorrectedAt = attrDate("correctedAt", optional: true, defaultValue: nil)
         let geIsTrainingSample = attrBool("isTrainingSample", defaultValue: false)
 
         goalEntry.properties = [
+            // 基础字段
             geDateString,
             geGoalText,
             geLastUpdated,
+            // 分析结果 - Topic/Sentiment (原有)
             geCategory,
             geCategoryConfidence,
             geSentiment,
             geSentimentScore,
+            // 分析结果 - 5个新维度
+            geUrgency,
+            geUrgencyConfidence,
+            geTimeFrame,
+            geTimeFrameConfidence,
+            geActionType,
+            geActionTypeConfidence,
+            geDifficulty,
+            geDifficultyConfidence,
+            geSpecificity,
+            geSpecificityConfidence,
+            // 分析时间和Embedding
             geAnalyzedAt,
+            geEmbedding,
+            // 用户纠正字段
             geCategoryUserCorrected,
             geSentimentUserCorrected,
+            geUrgencyUserCorrected,
+            geTimeFrameUserCorrected,
+            geActionTypeUserCorrected,
+            geDifficultyUserCorrected,
+            geSpecificityUserCorrected,
             geCorrectedAt,
             geIsTrainingSample
         ]
@@ -110,6 +173,15 @@ enum CoreDataModelBuilder {
         attr.attributeType = .integer16AttributeType
         attr.isOptional = false
         attr.defaultValue = defaultValue
+        return attr
+    }
+
+    private static func attrBinary(_ name: String, optional: Bool) -> NSAttributeDescription {
+        let attr = NSAttributeDescription()
+        attr.name = name
+        attr.attributeType = .binaryDataAttributeType
+        attr.isOptional = optional
+        attr.allowsExternalBinaryDataStorage = true // 允许外部存储大型二进制数据
         return attr
     }
 }

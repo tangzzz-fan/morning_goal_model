@@ -5,10 +5,29 @@ import Foundation
 // MARK: - 分析结果模型
 
 struct AnalysisResult {
-    let category: String
+    // MARK: - 原有维度
+
+    let category: String // Topic (主题)
     let categoryConfidence: Double
-    let sentiment: String
+    let sentiment: String // Sentiment (情感)
     let sentimentScore: Double
+
+    // MARK: - 新增维度 (5个)
+
+    let urgency: String? // Urgency (紧急度)
+    let urgencyConfidence: Double
+    let timeFrame: String? // TimeFrame (时间范围)
+    let timeFrameConfidence: Double
+    let actionType: String? // ActionType (行动类型)
+    let actionTypeConfidence: Double
+    let difficulty: String? // Difficulty (难度)
+    let difficultyConfidence: Double
+    let specificity: String? // Specificity (具体程度)
+    let specificityConfidence: Double
+
+    // MARK: - 可选数据
+
+    let embedding: [Float]? // 768维向量，用于相似度搜索
 
     // Top-K 结果 (用于 v2.0 AI 洞察)
     // 例如: [("工作", 0.456), ("学习", 0.234), ("个人发展", 0.156)]
@@ -21,6 +40,17 @@ struct AnalysisResult {
         categoryConfidence: Double,
         sentiment: String,
         sentimentScore: Double,
+        urgency: String? = nil,
+        urgencyConfidence: Double = 0.0,
+        timeFrame: String? = nil,
+        timeFrameConfidence: Double = 0.0,
+        actionType: String? = nil,
+        actionTypeConfidence: Double = 0.0,
+        difficulty: String? = nil,
+        difficultyConfidence: Double = 0.0,
+        specificity: String? = nil,
+        specificityConfidence: Double = 0.0,
+        embedding: [Float]? = nil,
         topCategories: [(name: String, confidence: Double)]? = nil,
         topSentiments: [(name: String, score: Double)]? = nil
     ) {
@@ -28,8 +58,40 @@ struct AnalysisResult {
         self.categoryConfidence = categoryConfidence
         self.sentiment = sentiment
         self.sentimentScore = sentimentScore
+        self.urgency = urgency
+        self.urgencyConfidence = urgencyConfidence
+        self.timeFrame = timeFrame
+        self.timeFrameConfidence = timeFrameConfidence
+        self.actionType = actionType
+        self.actionTypeConfidence = actionTypeConfidence
+        self.difficulty = difficulty
+        self.difficultyConfidence = difficultyConfidence
+        self.specificity = specificity
+        self.specificityConfidence = specificityConfidence
+        self.embedding = embedding
         self.topCategories = topCategories
         self.topSentiments = topSentiments
+    }
+
+    /// 从 InsightAnalysisResult 转换
+    init(from insightResult: InsightAnalysisResult) {
+        self.category = insightResult.topic?.label ?? "unknown"
+        self.categoryConfidence = insightResult.topic?.confidence ?? 0.0
+        self.sentiment = insightResult.sentiment?.label ?? "中性"
+        self.sentimentScore = insightResult.sentiment?.confidence ?? 0.0
+        self.urgency = insightResult.urgency?.label
+        self.urgencyConfidence = insightResult.urgency?.confidence ?? 0.0
+        self.timeFrame = insightResult.timeFrame?.label
+        self.timeFrameConfidence = insightResult.timeFrame?.confidence ?? 0.0
+        self.actionType = insightResult.actionType?.label
+        self.actionTypeConfidence = insightResult.actionType?.confidence ?? 0.0
+        self.difficulty = insightResult.difficulty?.label
+        self.difficultyConfidence = insightResult.difficulty?.confidence ?? 0.0
+        self.specificity = insightResult.specificity?.label
+        self.specificityConfidence = insightResult.specificity?.confidence ?? 0.0
+        self.embedding = nil // 可以通过 InsightModelManager 获取
+        self.topCategories = nil
+        self.topSentiments = nil
     }
 }
 
