@@ -1,7 +1,7 @@
 # 用户数据洞察系统 - 剩余任务清单
 
 > 基于 `User_Insight_System_Design.md` 设计文档
-> 更新时间: 2026-01-24
+> 更新时间: 2026-01-25
 
 ---
 
@@ -15,9 +15,9 @@
 | **Phase 3.5** | iOS 模型集成 & 调试 | ✅ 已完成 | InsightModelManager, 调试界面 |
 | **Phase 4.1-4.2** | Core Data 模型扩展 | ✅ 已完成 | GoalEntry 7维度字段, AnalysisResult 扩展 |
 | **Phase 4.3** | GoalDataAggregator | ✅ 已完成 | 聚合查询服务 |
-| **Phase 5** | 洞察引擎 | ⏳ 待开始 | 规则引擎, 模板系统 |
-| **Phase 6** | UI 开发 | ⏳ 待开始 | 洞察仪表盘, 趋势图表 |
-| **Phase 7** | 测试 & 优化 | ⏳ 待开始 | 性能报告, 用户测试 |
+| **Phase 5** | 洞察引擎 | ✅ 已完成 | InsightEngine 扩展, 模板系统, 单元测试 |
+| **Phase 6** | UI 开发 | ⏳ 进行中 | 统计Tab, 洞察卡片, 趋势图表 |
+| **Phase 7** | 测试 & 优化 | ⏳ 进行中 | 单元测试, 性能报告 |
 
 ---
 
@@ -123,81 +123,54 @@
 
 ---
 
-## Phase 5: 洞察生成引擎 (待开始)
+## Phase 5: 洞察生成引擎 ✅
 
 ### 5.1 洞察类型定义
 
-- [ ] 创建 `InsightType.swift`
-  ```swift
-  enum InsightType {
-      case pattern        // 模式识别
-      case balance        // 平衡建议
-      case trend          // 趋势分析
-      case achievability  // 可达成性评估
-      case completion     // 完成率预测
-      case comparison     // 同期对比
-      case encouragement  // 鼓励激励
-  }
-  ```
+- [x] 扩展 `Insight` 枚举，覆盖 balance / volumeTrend / weekdayPattern / encouragement / comparison / recurringGoal / achievability
 
-- [ ] 创建 `Insight.swift` 结构体
+### 5.2 分析器实现 (已集成在 InsightEngine)
 
-### 5.2 分析器实现
-
-- [ ] **PatternAnalyzer.swift** - 模式识别
-  - [ ] `analyzeWeekdayPatterns(records:)` - 识别周期性模式
-  - [ ] `findRecurringGoals(records:)` - 识别高频目标
-
-- [ ] **BalanceAdvisor.swift** - 平衡建议
-  - [ ] `checkBalance(stats:)` - 检测目标类型不平衡
-  - [ ] `suggestComplementary(type:)` - 建议互补类型
-
-- [ ] **TrendAnalyzer.swift** - 趋势分析
-  - [ ] `analyzeSentimentTrend(dailyStats:)` - 情感趋势
-  - [ ] `analyzeVolumeTrend(dailyStats:)` - 目标数量趋势
-
-- [ ] **AchievabilityPredictor.swift** - 可达成性评估
-  - [ ] `evaluateGoal(goal:historicalRecords:)` - 评估目标
+- [x] `analyzeWeekdayPattern(entries:)` - 识别周期性模式
+- [x] `findRecurringGoals(entries:)` - 识别高频目标
+- [x] `analyzeBalance(entries:)` - 目标类型平衡建议
+- [x] `analyzeSentimentTrend(entries:)` - 情感趋势
+- [x] `analyzeVolumeTrend(entries:)` - 目标数量趋势
+- [x] `analyzeAchievability(entries:)` - 可达成性评估
 
 ### 5.3 InsightGenerator 综合生成器
 
-- [ ] 创建 `InsightGenerator.swift`
-- [ ] 实现 `generateInsights(for:stats:historicalRecords:)`
-- [ ] 实现洞察优先级排序
-- [ ] 实现 Top-K 筛选
+- [x] `InsightEngine.generateInsights(for:topK:)` 统一生成洞察
+- [x] 洞察优先级排序
+- [x] Top-K 筛选
 
 ### 5.4 洞察模板系统
 
-- [ ] 创建 `InsightTemplate.swift`
-- [ ] 创建预定义模板库 (10-20 个模板)
-- [ ] 实现模板变量填充
+- [x] 创建 `InsightTemplate.swift`
+- [x] 预定义模板库（11 个模板）
+- [x] 模板变量填充
 
 ---
 
-## Phase 6: UI 开发 (待开始)
+## Phase 6: UI 开发 (进行中)
 
-### 6.1 InsightDashboardView - 洞察仪表盘
+### 6.1 洞察统计仪表盘
 
-- [ ] 创建 `InsightDashboardView.swift`
-- [ ] 快速统计卡片 (QuickStatsCard)
-  - 今日目标数
-  - 本周完成率
-  - 连续天数
-- [ ] 洞察列表 (InsightCard)
-- [ ] 周期选择器 (日/周/月)
+- [x] 创建 `InsightStatsTab.swift` (统计Tab)
+- [x] 快速统计卡片
+- [x] 周期选择器 (日/周/月)
 
 ### 6.2 图表组件
 
-- [ ] 情感趋势折线图 (SentimentTrendChart)
-- [ ] 目标类型分布饼图 (GoalDistributionChart)
-- [ ] 完成率柱状图 (可选)
+- [x] 情感趋势折线图（Charts）
+- [x] 目标数量趋势图（Charts）
+- [x] 主题/星期分布展示
 
 ### 6.3 InsightCard 组件
 
-- [ ] 创建 `InsightCard.swift`
-- [ ] 图标 + 标题
-- [ ] 描述文本
-- [ ] 行动建议 (可选)
+- [x] 创建 `InsightCardView.swift`
+- [x] 图标 + 标题
+- [x] 描述文本
 
 ### 6.4 InsightViewModel
 
@@ -208,20 +181,18 @@
 
 ### 6.5 集成到主界面
 
-- [ ] 在 RootView 添加洞察入口
-- [ ] 或在现有界面嵌入洞察卡片
+- [x] RootView 集成 InsightStatsTab
+- [x] InsightsView 列表展示洞察卡片
 
 ---
 
-## Phase 7: 测试 & 优化 (待开始)
+## Phase 7: 测试 & 优化 (进行中)
 
 ### 7.1 单元测试
 
 - [ ] GoalDataAggregator 测试
-- [ ] PatternAnalyzer 测试
-- [ ] BalanceAdvisor 测试
-- [ ] TrendAnalyzer 测试
-- [ ] AchievabilityPredictor 测试
+- [x] InsightEngineTests
+- [ ] Balance/Trend/Achievability 相关测试
 
 ### 7.2 集成测试
 
@@ -257,20 +228,22 @@
 
 ## 已完成交付物
 
-### iOS 集成文件 (Phase 3.5 - 4.3)
+### iOS 集成文件 (Phase 3.5 - 6)
 
 ```
 ios/MorningGoal/MorningGoal/
 ├── Services/
 │   ├── InsightModelManager.swift      # 模型加载与推理
 │   ├── InsightUpdateManager.swift     # 设备端训练
-│   └── GoalDataAggregator.swift       # 数据聚合查询服务
+│   ├── GoalDataAggregator.swift       # 数据聚合查询服务
+│   ├── InsightEngine.swift            # 洞察生成引擎
+│   └── InsightTemplate.swift          # 洞察模板系统
 ├── Views/
 │   ├── InsightStatsTab.swift          # 洞察统计Tab (Tab 2)
+│   ├── InsightCardView.swift          # 洞察卡片与列表
+│   └── InsightModelDebugTab.swift     # 调试界面
 ├── Models/
 │   └── InsightClassifierLabels.swift  # 标签定义
-├── Views/
-│   └── InsightModelDebugTab.swift     # 调试界面
 ├── coreml/
 │   ├── BertFeatureExtractor.mlpackage
 │   ├── TopicClassifier_Updatable.mlpackage
@@ -322,11 +295,9 @@ src/export/
 
 **建议按以下顺序推进：**
 
-1. **Phase 4.1-4.2**: 扩展 Core Data 模型，支持保存 7 维度分类结果
-2. **Phase 4.3**: 实现 GoalDataAggregator 基础聚合查询
-3. **Phase 5**: 实现洞察引擎（从简单规则开始）
-4. **Phase 6**: 开发洞察 UI
-5. **Phase 7**: 测试与优化
+1. **Phase 4.4**: 后台聚合定时任务（可选）
+2. **Phase 6**: 完成 InsightViewModel 与仪表盘补齐
+3. **Phase 7**: 完成测试与性能优化
 
 ---
 
