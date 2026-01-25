@@ -32,12 +32,12 @@ final class AggregationScheduler {
 
         // 注册 App Refresh 任务 (暂时注释掉，因为用户当天输入频率低)
         /*
-        BGTaskScheduler.shared.register(forTaskWithIdentifier: refreshTaskIdentifier, using: nil) { task in
-            if let refreshTask = task as? BGAppRefreshTask {
-                self.handleAppRefresh(task: refreshTask)
-            }
-        }
-        */
+         BGTaskScheduler.shared.register(forTaskWithIdentifier: refreshTaskIdentifier, using: nil) { task in
+             if let refreshTask = task as? BGAppRefreshTask {
+                 self.handleAppRefresh(task: refreshTask)
+             }
+         }
+         */
     }
 
     /// 调度下一个后台任务
@@ -100,22 +100,22 @@ final class AggregationScheduler {
             print("Could not schedule weekly aggregation: \(error)")
         }
     }
-    
+
     /*
-    private func scheduleAppRefresh() {
-        let request = BGAppRefreshTaskRequest(identifier: refreshTaskIdentifier)
-        // 最早 30 分钟后运行
-        request.earliestBeginDate = Date(timeIntervalSinceNow: 30 * 60)
-        
-        do {
-            try BGTaskScheduler.shared.submit(request)
-            // print("Scheduled app refresh task")
-        } catch {
-            print("Could not schedule app refresh: \(error)")
-        }
-    }
-    */
-    
+     private func scheduleAppRefresh() {
+         let request = BGAppRefreshTaskRequest(identifier: refreshTaskIdentifier)
+         // 最早 30 分钟后运行
+         request.earliestBeginDate = Date(timeIntervalSinceNow: 30 * 60)
+
+         do {
+             try BGTaskScheduler.shared.submit(request)
+             // print("Scheduled app refresh task")
+         } catch {
+             print("Could not schedule app refresh: \(error)")
+         }
+     }
+     */
+
     // MARK: - Task Handling
 
     private func handleDailyAggregation(task: BGProcessingTask) {
@@ -166,32 +166,32 @@ final class AggregationScheduler {
     }
 
     /*
-    private func handleAppRefresh(task: BGAppRefreshTask) {
-        scheduleAppRefresh() // 重新调度
+     private func handleAppRefresh(task: BGAppRefreshTask) {
+         scheduleAppRefresh() // 重新调度
 
-        task.expirationHandler = {
-            print("App refresh task expired")
-            task.setTaskCompleted(success: false)
-        }
+         task.expirationHandler = {
+             print("App refresh task expired")
+             task.setTaskCompleted(success: false)
+         }
 
-        let context = DataController.shared.container.newBackgroundContext()
-        let aggregator = GoalDataAggregator(viewContext: context)
+         let context = DataController.shared.container.newBackgroundContext()
+         let aggregator = GoalDataAggregator(viewContext: context)
 
-        // 使用 Task 进行异步操作
-        Task {
-            do {
-                // 简单聚合一下当日数据，确保缓存热度
-                let today = Date()
-                _ = aggregator.getAggregatedStats(from: today, to: today)
+         // 使用 Task 进行异步操作
+         Task {
+             do {
+                 // 简单聚合一下当日数据，确保缓存热度
+                 let today = Date()
+                 _ = aggregator.getAggregatedStats(from: today, to: today)
 
-                // 预生成洞察
-                let engine = InsightEngine(context: context)
-                _ = engine.generateInsights(for: 7)
+                 // 预生成洞察
+                 let engine = InsightEngine(context: context)
+                 _ = engine.generateInsights(for: 7)
 
-                print("App Refresh Completed")
-                task.setTaskCompleted(success: true)
-            }
-        }
-    }
-    */
+                 print("App Refresh Completed")
+                 task.setTaskCompleted(success: true)
+             }
+         }
+     }
+     */
 }
