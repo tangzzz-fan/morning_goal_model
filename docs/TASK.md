@@ -116,10 +116,9 @@
 - [x] 集成到 RootView Tab 2 (替换原 "测试" Tab)
 
 ### 4.4 数据聚合定时任务 (可选)
-
-- [ ] 使用 BackgroundTasks API 实现定时聚合
-- [ ] 每日计算日统计
-- [ ] 每周计算周统计
+- [x] 使用 BackgroundTasks API 实现定时聚合
+- [x] 每日计算日统计
+- [x] 每周计算周统计
 
 ---
 
@@ -174,10 +173,10 @@
 
 ### 6.4 InsightViewModel
 
-- [ ] 创建 `InsightViewModel.swift`
-- [ ] 管理洞察数据加载
-- [ ] 管理周期切换
-- [ ] 管理趋势数据
+- [x] 创建 `InsightViewModel.swift`
+- [x] 管理洞察数据加载
+- [x] 管理周期切换
+- [x] 管理趋势数据
 
 ### 6.5 集成到主界面
 

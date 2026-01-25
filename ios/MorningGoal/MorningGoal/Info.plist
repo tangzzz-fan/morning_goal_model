@@ -5,6 +5,12 @@
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>remote-notification</string>
+		<string>processing</string>
+	</array>
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>com.morninggoal.dailyAggregation</string>
+		<string>com.morninggoal.weeklyAggregation</string>
 	</array>
 </dict>
 </plist>

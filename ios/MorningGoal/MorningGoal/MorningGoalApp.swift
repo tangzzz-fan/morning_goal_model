@@ -76,7 +76,11 @@ struct MorningGoalApp: App {
                 _debugValidateTimeWindow(context: context)
                 #endif
             }
-            if phase == .background { dataController.save() }
+            if phase == .background {
+                dataController.save()
+                // 调度后台任务
+                AggregationScheduler.shared.scheduleNextTasks()
+            }
         }
     }
 }

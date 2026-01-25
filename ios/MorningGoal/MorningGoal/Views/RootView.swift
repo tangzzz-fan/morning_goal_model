@@ -62,7 +62,7 @@ struct RootView: View {
                         }
 
                     // Tab 2: Insight Stats (数据聚合统计)
-                    InsightStatsTab()
+                    InsightStatsTab(context: context)
                         .tabItem {
                             Label("统计", systemImage: "chart.bar.fill")
                         }

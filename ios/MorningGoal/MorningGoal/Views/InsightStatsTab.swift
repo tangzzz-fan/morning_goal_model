@@ -10,25 +10,16 @@ import CoreData
 import SwiftUI
 
 struct InsightStatsTab: View {
-    @Environment(\.managedObjectContext) private var context
-
-    // State
-    @State private var selectedPeriod: AggregationPeriod = .week
-    @State private var stats: AggregatedStats?
-    @State private var topicDistribution: [DistributionItem] = []
-    @State private var sentimentTrend: SentimentTrendResult?
-    @State private var goalCountTrend: [TrendDataPoint] = []
-    @State private var weekdayDistribution: [DistributionItem] = []
-    @State private var isLoading = false
-    @State private var errorMessage: String?
+    // ViewModel
+    @StateObject private var viewModel: InsightViewModel
 
     // 相似目标搜索
     @State private var searchText = ""
     @State private var similarGoals: [SimilarGoalResult] = []
     @State private var isSearching = false
 
-    private var aggregator: GoalDataAggregator {
-        GoalDataAggregator(viewContext: context)
+    init(context: NSManagedObjectContext) {
+        _viewModel = StateObject(wrappedValue: InsightViewModel(context: context))
     }
 
     var body: some View {
@@ -41,38 +32,38 @@ struct InsightStatsTab: View {
                         // 周期选择器
                         periodPicker
 
-                        if isLoading {
+                        if viewModel.isLoading {
                             loadingView
-                        } else if let error = errorMessage {
+                        } else if let error = viewModel.errorMessage {
                             errorView(error)
                         } else {
                             // 快速统计卡片
-                            if let stats = stats {
+                            if let stats = viewModel.stats {
                                 quickStatsSection(stats)
                             }
 
                             // 主题分布
-                            if !topicDistribution.isEmpty {
+                            if !viewModel.topicDistribution.isEmpty {
                                 topicDistributionSection
                             }
 
                             // 情感趋势图表
-                            if let trend = sentimentTrend, !trend.dataPoints.isEmpty {
+                            if let trend = viewModel.sentimentTrend, !trend.dataPoints.isEmpty {
                                 sentimentTrendSection(trend)
                             }
 
                             // 目标数量趋势
-                            if !goalCountTrend.isEmpty {
+                            if !viewModel.goalCountTrend.isEmpty {
                                 goalCountTrendSection
                             }
 
                             // 星期分布
-                            if !weekdayDistribution.isEmpty {
+                            if !viewModel.weekdayDistribution.isEmpty {
                                 weekdayDistributionSection
                             }
 
                             // 置信度统计
-                            if let stats = stats {
+                            if let stats = viewModel.stats {
                                 confidenceSection(stats.averageConfidence)
                             }
                         }
@@ -87,17 +78,14 @@ struct InsightStatsTab: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: loadData) {
+                    Button(action: { viewModel.loadData() }) {
                         Image(systemName: "arrow.clockwise")
                             .foregroundColor(Color.Design.sunriseGold)
                     }
                 }
             }
             .onAppear {
-                loadData()
-            }
-            .onChange(of: selectedPeriod) { _, _ in
-                loadData()
+                viewModel.loadData()
             }
         }
     }
@@ -105,7 +93,7 @@ struct InsightStatsTab: View {
     // MARK: - 周期选择器
 
     private var periodPicker: some View {
-        Picker("周期", selection: $selectedPeriod) {
+        Picker("周期", selection: $viewModel.selectedPeriod) {
             ForEach(AggregationPeriod.allCases, id: \.self) { period in
                 Text(period.displayName).tag(period)
             }
@@ -140,7 +128,7 @@ struct InsightStatsTab: View {
                 .foregroundColor(Color.Design.softWhite)
                 .multilineTextAlignment(.center)
             Button("重试") {
-                loadData()
+                viewModel.loadData()
             }
             .buttonStyle(SunriseGoldButtonStyle())
         }
@@ -189,7 +177,7 @@ struct InsightStatsTab: View {
             sectionHeader("主题分布", icon: "tag.fill")
 
             VStack(spacing: Spacing.xs) {
-                ForEach(topicDistribution.prefix(8)) { item in
+                ForEach(viewModel.topicDistribution.prefix(8)) { item in
                     HStack {
                         if let icon = item.icon {
                             Image(systemName: icon)
@@ -294,7 +282,7 @@ struct InsightStatsTab: View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
             sectionHeader("目标数量趋势", icon: "chart.line.uptrend.xyaxis")
 
-            Chart(goalCountTrend) { point in
+            Chart(viewModel.goalCountTrend) { point in
                 BarMark(
                     x: .value("日期", point.date),
                     y: .value("数量", point.count)
@@ -323,7 +311,7 @@ struct InsightStatsTab: View {
             sectionHeader("星期分布", icon: "calendar")
 
             HStack(spacing: 4) {
-                ForEach(weekdayDistribution) { item in
+                ForEach(viewModel.weekdayDistribution) { item in
                     let itemCount = item.count
                     VStack(spacing: 4) {
                         Text("\(itemCount)")
@@ -402,115 +390,76 @@ struct InsightStatsTab: View {
         return .red
     }
 
-    // MARK: - 数据加载
+    // MARK: - 辅助组件
 
-    private func loadData() {
-        isLoading = true
-        errorMessage = nil
+    private struct StatCard: View {
+        let title: String
+        let value: String
+        let icon: String
+        let color: Color
 
-        Task {
-            do {
-                // 获取天数
-                let days = selectedPeriod.defaultDays
+        var body: some View {
+            VStack(spacing: Spacing.xs) {
+                Image(systemName: icon)
+                    .font(.system(size: 20))
+                    .foregroundColor(color)
 
-                // 并行加载所有数据
-                async let statsTask = aggregator.getAggregatedStats(for: selectedPeriod)
-                async let topicTask = aggregator.getTopicDistribution(period: selectedPeriod)
-                async let sentimentTask = aggregator.getSentimentTrend(days: days)
-                async let goalCountTask = aggregator.getGoalCountTrend(days: days)
-                async let weekdayTask = aggregator.getWeekdayDistribution(period: selectedPeriod)
+                Text(value)
+                    .font(Typography.title)
+                    .foregroundColor(Color.Design.softWhite)
 
-                let (loadedStats, loadedTopic, loadedSentiment, loadedGoalCount, loadedWeekday) = await(
-                    statsTask, topicTask, sentimentTask, goalCountTask, weekdayTask
-                )
+                Text(title)
+                    .font(Typography.caption)
+                    .foregroundColor(Color.Design.mutedGray)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, Spacing.md)
+            .background(Color.Design.darkIndigo.opacity(0.5))
+            .cornerRadius(CornerRadius.md)
+        }
+    }
 
-                await MainActor.run {
-                    self.stats = loadedStats
-                    self.topicDistribution = loadedTopic
-                    self.sentimentTrend = loadedSentiment
-                    self.goalCountTrend = loadedGoalCount
-                    self.weekdayDistribution = loadedWeekday
-                    self.isLoading = false
+    private struct ConfidenceRow: View {
+        let label: String
+        let value: Double
+
+        var body: some View {
+            HStack {
+                Text(label)
+                    .font(Typography.caption)
+                    .foregroundColor(Color.Design.softWhite)
+
+                Spacer()
+
+                // 进度条
+                GeometryReader { geo in
+                    ZStack(alignment: .leading) {
+                        RoundedRectangle(cornerRadius: 2)
+                            .fill(Color.Design.deepIndigo)
+                            .frame(height: 4)
+
+                        RoundedRectangle(cornerRadius: 2)
+                            .fill(confidenceColor)
+                            .frame(width: geo.size.width * value, height: 4)
+                    }
                 }
-            } catch {
-                await MainActor.run {
-                    self.errorMessage = "加载失败: \(error.localizedDescription)"
-                    self.isLoading = false
-                }
+                .frame(width: 60, height: 4)
+
+                Text(String(format: "%.0f%%", value * 100))
+                    .font(.system(size: 11, weight: .medium, design: .monospaced))
+                    .foregroundColor(confidenceColor)
+                    .frame(width: 36, alignment: .trailing)
             }
         }
-    }
-}
 
-// MARK: - 辅助组件
-
-private struct StatCard: View {
-    let title: String
-    let value: String
-    let icon: String
-    let color: Color
-
-    var body: some View {
-        VStack(spacing: Spacing.xs) {
-            Image(systemName: icon)
-                .font(.system(size: 20))
-                .foregroundColor(color)
-
-            Text(value)
-                .font(Typography.title)
-                .foregroundColor(Color.Design.softWhite)
-
-            Text(title)
-                .font(Typography.caption)
-                .foregroundColor(Color.Design.mutedGray)
+        private var confidenceColor: Color {
+            if value >= 0.8 { return .green }
+            if value >= 0.6 { return .orange }
+            return .red
         }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, Spacing.md)
-        .background(Color.Design.darkIndigo.opacity(0.5))
-        .cornerRadius(CornerRadius.md)
-    }
-}
-
-private struct ConfidenceRow: View {
-    let label: String
-    let value: Double
-
-    var body: some View {
-        HStack {
-            Text(label)
-                .font(Typography.caption)
-                .foregroundColor(Color.Design.softWhite)
-
-            Spacer()
-
-            // 进度条
-            GeometryReader { geo in
-                ZStack(alignment: .leading) {
-                    RoundedRectangle(cornerRadius: 2)
-                        .fill(Color.Design.deepIndigo)
-                        .frame(height: 4)
-
-                    RoundedRectangle(cornerRadius: 2)
-                        .fill(confidenceColor)
-                        .frame(width: geo.size.width * value, height: 4)
-                }
-            }
-            .frame(width: 60, height: 4)
-
-            Text(String(format: "%.0f%%", value * 100))
-                .font(.system(size: 11, weight: .medium, design: .monospaced))
-                .foregroundColor(confidenceColor)
-                .frame(width: 36, alignment: .trailing)
-        }
-    }
-
-    private var confidenceColor: Color {
-        if value >= 0.8 { return .green }
-        if value >= 0.6 { return .orange }
-        return .red
     }
 }
 
 #Preview {
-    InsightStatsTab()
+    InsightStatsTab(context: DataController.preview.container.viewContext)
 }

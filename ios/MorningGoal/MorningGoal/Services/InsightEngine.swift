@@ -77,10 +77,18 @@ class InsightEngine {
     ///   - topK: 返回的最大洞察数量
     /// - Returns: 按优先级排序的洞察数组
     func generateInsights(for period: Int = 30, topK: Int = 5) -> [Insight] {
-        var insights: [Insight] = []
-
         // 获取最近N天的数据
         let entries = fetchRecentEntries(days: period)
+        return generateInsights(from: entries, topK: topK)
+    }
+
+    /// 根据给定的目标条目生成洞察
+    /// - Parameters:
+    ///   - entries: 目标条目数组
+    ///   - topK: 返回的最大洞察数量
+    /// - Returns: 按优先级排序的洞察数组
+    func generateInsights(from entries: [GoalEntry], topK: Int = 5) -> [Insight] {
+        var insights: [Insight] = []
 
         guard entries.count >= 7 else {
             print("⏭️ 数据不足（<7天），跳过洞察生成")

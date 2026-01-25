@@ -66,6 +66,7 @@ struct InsightModelDebugTab: View {
                 ScrollView {
                     VStack(spacing: Spacing.lg) {
                         statusCard
+                        toolsSection
                         inputSection
                         presetsSection
 
@@ -132,6 +133,35 @@ struct InsightModelDebugTab: View {
         .padding()
         .background(Color.Design.darkIndigo.opacity(0.6))
         .cornerRadius(CornerRadius.md)
+    }
+
+    // MARK: - Tools Section
+
+    private var toolsSection: some View {
+        NavigationLink(destination: InsightEngineDebugView()) {
+            HStack {
+                Image(systemName: "flask.fill")
+                    .foregroundColor(.purple)
+                    .font(.system(size: 20))
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("洞察引擎实验室")
+                        .font(Typography.headline)
+                        .foregroundColor(Color.Design.softWhite)
+                    Text("测试分析器在不同场景下的表现")
+                        .font(Typography.caption)
+                        .foregroundColor(Color.Design.mutedGray)
+                }
+
+                Spacer()
+
+                Image(systemName: "chevron.right")
+                    .foregroundColor(Color.Design.mutedGray)
+            }
+            .padding()
+            .background(Color.Design.darkIndigo.opacity(0.6))
+            .cornerRadius(CornerRadius.md)
+        }
     }
 
     // MARK: - Input Section
