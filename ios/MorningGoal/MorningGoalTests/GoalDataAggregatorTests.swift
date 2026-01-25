@@ -252,28 +252,34 @@ final class GoalDataAggregatorTests: XCTestCase {
     }
     
     func test_getSimilarGoals_returnsCorrectMatches() async throws {
-        // Create some dummy entries with embeddings
+        // Create valid Float embedding data (Float is 4 bytes)
+        let vectorA: [Float] = [1.0, 0.0, 0.0]
+        let dataA = Data(buffer: UnsafeBufferPointer(start: vectorA, count: vectorA.count))
+        
+        let vectorB: [Float] = [0.9, 0.1, 0.0]
+        let dataB = Data(buffer: UnsafeBufferPointer(start: vectorB, count: vectorB.count))
+        
+        let vectorC: [Float] = [0.0, 1.0, 0.0]
+        let dataC = Data(buffer: UnsafeBufferPointer(start: vectorC, count: vectorC.count))
+        
         let e1 = GoalEntry(context: context)
         e1.goalText = "Goal A"
-        e1.embedding = Data([0x01, 0x02, 0x03]) // Dummy embedding for A
+        e1.embedding = dataA
+        e1.category = "Test" // Populate required fields if any
         
         let e2 = GoalEntry(context: context)
         e2.goalText = "Goal B"
-        e2.embedding = Data([0x01, 0x02, 0x04]) // Dummy embedding for B (similar to A)
+        e2.embedding = dataB
+        e2.category = "Test"
         
         let e3 = GoalEntry(context: context)
         e3.goalText = "Goal C"
-        e3.embedding = Data([0x10, 0x20, 0x30]) // Dummy embedding for C (dissimilar to A)
+        e3.embedding = dataC
+        e3.category = "Test"
         
         try context.save()
         
-        // Assume dataA is the embedding for "Goal A"
-        let dataA = Data([0x01, 0x02, 0x03])
-        
         // Search similar to A (using A's embedding)
-        // Should return B first, then C (or C might be 0 similarity)
-        // Exclude A itself from results
-        
         let results = try await aggregator.getSimilarGoals(embedding: dataA, limit: 10, excludeObjectID: e1.objectID)
         
         XCTAssertFalse(results.isEmpty)

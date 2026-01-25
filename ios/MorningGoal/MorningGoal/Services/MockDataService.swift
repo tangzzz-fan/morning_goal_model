@@ -151,19 +151,11 @@ enum MockDataService {
         // 先清除现有数据
         clearAllData(from: context)
 
-        // 从昨天开始往回添加连续天数（不包括今天，让用户可以输入今天的目标）
+        // 从昨天开始往回添加连续天数
         for dayOffset in 1 ... days {
             guard let date = calendar.date(byAdding: .day, value: -dayOffset, to: today) else { continue }
 
-            let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "yyyy-MM-dd"
-            let dateString = dateFormatter.string(from: date)
-
-            let entry = GoalEntry(context: context)
-            entry.dateString = dateString
-            entry.lastUpdated = date
-
-            // 根据天数设置不同的目标内容
+            // 目标文案
             let sampleGoals = [
                 "完成核心功能开发",
                 "优化用户界面交互",
@@ -173,20 +165,36 @@ enum MockDataService {
                 "与团队沟通协调",
                 "回顾并制定计划"
             ]
-            entry.goalText = sampleGoals[dayOffset % sampleGoals.count]
+            let text = sampleGoals[dayOffset % sampleGoals.count]
+
+            // 构造模拟分析数据
+            let mockAnalysis = MockEntryData(
+                text: text,
+                category: ["工作", "学习", "生活"].randomElement()!,
+                action: ["工作", "学习", "生活", "社交"].randomElement()!,
+                sentiment: "积极",
+                score: Double.random(in: 0.7 ... 0.9)
+            )
+
+            createMockEntry(date: date, text: text, in: context, analysis: mockAnalysis)
         }
+
+        // 创建今天的空记录（未分析），模拟用户刚开始
+        let todayEntry = GoalEntry(context: context)
+        todayEntry.dateString = GoalEntry.todayString()
+        todayEntry.goalText = ""
+        todayEntry.lastUpdated = Date()
 
         // 保存到数据库
         do {
             try context.save()
-            print("✅ Streak set to \(days) days successfully")
+            print("✅ Streak set to \(days) days successfully (with analyzed history)")
         } catch {
             print("❌ Error setting streak: \(error)")
         }
     }
 
-    /// 添加历史上的今天数据 - 用于测试"历史上的今天"功能
-    /// - Parameter yearsAgo: 添加几年前的今天的数据（1-5年）
+    /// 添加历史上的今天数据
     static func addOnThisDayData(yearsAgo: Int, in context: NSManagedObjectContext) {
         let calendar = Calendar.current
         let today = Date()
@@ -195,26 +203,6 @@ enum MockDataService {
             // 计算N年前的今天
             guard let pastDate = calendar.date(byAdding: .year, value: -year, to: today) else { continue }
 
-            let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "yyyy-MM-dd"
-            let dateString = dateFormatter.string(from: pastDate)
-
-            // 检查是否已存在
-            let fetchRequest = NSFetchRequest<GoalEntry>(entityName: "GoalEntry")
-            fetchRequest.predicate = NSPredicate(format: "dateString == %@", dateString)
-            fetchRequest.fetchLimit = 1
-
-            if (try? context.fetch(fetchRequest).first) != nil {
-                // 如果已存在，跳过
-                print("⚠️ Entry for \(dateString) already exists, skipping")
-                continue
-            }
-
-            let entry = GoalEntry(context: context)
-            entry.dateString = dateString
-            entry.lastUpdated = pastDate
-
-            // 根据年份设置不同的目标内容
             let onThisDayGoals = [
                 "\(year)年前的今天：专注于个人成长和学习",
                 "\(year)年前的今天：完成重要的项目里程碑",
@@ -222,13 +210,23 @@ enum MockDataService {
                 "\(year)年前的今天：花时间与家人朋友相处",
                 "\(year)年前的今天：突破自己的舒适区"
             ]
-            entry.goalText = onThisDayGoals[year % onThisDayGoals.count]
+            let text = onThisDayGoals[year % onThisDayGoals.count]
+
+            let mockAnalysis = MockEntryData(
+                text: text,
+                category: "回忆",
+                action: "回顾",
+                sentiment: "积极",
+                score: 0.95
+            )
+
+            createMockEntry(date: pastDate, text: text, in: context, analysis: mockAnalysis)
         }
 
         // 保存到数据库
         do {
             try context.save()
-            print("✅ On This Day data added for \(yearsAgo) year(s) ago")
+            print("✅ On This Day data added for \(yearsAgo) year(s) ago (analyzed)")
         } catch {
             print("❌ Error adding On This Day data: \(error)")
         }
