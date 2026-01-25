@@ -61,10 +61,10 @@ struct RootView: View {
                             Label("目标", systemImage: "list.bullet")
                         }
 
-                    // Tab 2: Profile / Model Validation
-                    ProfileValidationView()
+                    // Tab 2: Insight Stats (数据聚合统计)
+                    InsightStatsTab()
                         .tabItem {
-                            Label("测试", systemImage: "hammer.fill")
+                            Label("统计", systemImage: "chart.bar.fill")
                         }
 
                     // Tab 3: Insight Model Debug

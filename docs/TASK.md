@@ -14,7 +14,7 @@
 | **Phase 3** | CoreML 导出 | ✅ 已完成 | 7个 .mlpackage 文件 |
 | **Phase 3.5** | iOS 模型集成 & 调试 | ✅ 已完成 | InsightModelManager, 调试界面 |
 | **Phase 4.1-4.2** | Core Data 模型扩展 | ✅ 已完成 | GoalEntry 7维度字段, AnalysisResult 扩展 |
-| **Phase 4.3** | GoalDataAggregator | ⏳ 待开始 | 聚合查询服务 |
+| **Phase 4.3** | GoalDataAggregator | ✅ 已完成 | 聚合查询服务 |
 | **Phase 5** | 洞察引擎 | ⏳ 待开始 | 规则引擎, 模板系统 |
 | **Phase 6** | UI 开发 | ⏳ 待开始 | 洞察仪表盘, 趋势图表 |
 | **Phase 7** | 测试 & 优化 | ⏳ 待开始 | 性能报告, 用户测试 |
@@ -104,14 +104,16 @@
   - [x] 添加 `init(from: InsightAnalysisResult)` 转换初始化器
   - [x] 保持向后兼容（新字段有默认值）
 
-### 4.3 GoalDataAggregator 服务
+### 4.3 GoalDataAggregator 服务 ✅
 
-- [ ] 创建 `GoalDataAggregator.swift`
-- [ ] 实现 `getAggregatedStats(from:to:)` - 获取时间范围内统计
-- [ ] 实现 `getTopicDistribution(period:)` - 获取主题分布
-- [ ] 实现 `getSentimentTrend(days:)` - 获取情感趋势
-- [ ] 实现 `getCompletionRate(groupBy:period:)` - 获取完成率
-- [ ] 实现 `getSimilarGoals(embedding:limit:)` - 相似目标搜索 (可选)
+- [x] 创建 `GoalDataAggregator.swift`
+- [x] 实现 `getAggregatedStats(from:to:)` - 获取时间范围内统计
+- [x] 实现 `getTopicDistribution(period:)` - 获取主题分布
+- [x] 实现 `getSentimentTrend(days:)` - 获取情感趋势
+- [x] 实现 `getCompletionRate(groupBy:period:)` - 获取完成率
+- [x] 实现 `getSimilarGoals(embedding:limit:)` - 相似目标搜索 (使用 Accelerate 框架加速余弦相似度计算)
+- [x] 创建 `InsightStatsTab.swift` - 统计展示界面
+- [x] 集成到 RootView Tab 2 (替换原 "测试" Tab)
 
 ### 4.4 数据聚合定时任务 (可选)
 
@@ -255,13 +257,16 @@
 
 ## 已完成交付物
 
-### iOS 集成文件 (Phase 3.5)
+### iOS 集成文件 (Phase 3.5 - 4.3)
 
 ```
 ios/MorningGoal/MorningGoal/
 ├── Services/
 │   ├── InsightModelManager.swift      # 模型加载与推理
-│   └── InsightUpdateManager.swift     # 设备端训练
+│   ├── InsightUpdateManager.swift     # 设备端训练
+│   └── GoalDataAggregator.swift       # 数据聚合查询服务
+├── Views/
+│   ├── InsightStatsTab.swift          # 洞察统计Tab (Tab 2)
 ├── Models/
 │   └── InsightClassifierLabels.swift  # 标签定义
 ├── Views/

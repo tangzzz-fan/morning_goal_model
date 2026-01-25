@@ -12,6 +12,9 @@ struct TodayInputView: View {
     @State private var selectedEntryForCard: GoalEntry?
     @State private var titleText: String = ""
 
+    // 洞察模型管理器
+    @StateObject private var modelManager = InsightModelManagerWrapper()
+
     // Completion callback for dismissal
     let onComplete: () -> Void
 
@@ -58,6 +61,11 @@ struct TodayInputView: View {
             // 保存后收起键盘
             focused = false
 
+            // 异步分析目标（不阻塞 UI）
+            Task {
+                await analyzeGoalEntry(entry)
+            }
+
             // 延迟后调用完成回调以关闭视图
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 onComplete()
@@ -76,6 +84,70 @@ struct TodayInputView: View {
             }
         } catch {
             saveStatus = .idle
+        }
+    }
+
+    /// 分析目标并更新 GoalEntry
+    private func analyzeGoalEntry(_ entry: GoalEntry) async {
+        do {
+            let result = try await modelManager.analyze(text: entry.goalText)
+
+            await MainActor.run {
+                // 更新 Topic (主题)
+                if let topic = result.topic {
+                    entry.category = topic.label
+                    entry.categoryConfidence = topic.confidence
+                }
+
+                // 更新 Sentiment (情感)
+                if let sentiment = result.sentiment {
+                    entry.sentiment = sentiment.label
+                    entry.sentimentScore = sentiment.confidence
+                }
+
+                // 更新 Urgency (紧急度)
+                if let urgency = result.urgency {
+                    entry.urgency = urgency.label
+                    entry.urgencyConfidence = urgency.confidence
+                }
+
+                // 更新 TimeFrame (时间范围)
+                if let timeFrame = result.timeFrame {
+                    entry.timeFrame = timeFrame.label
+                    entry.timeFrameConfidence = timeFrame.confidence
+                }
+
+                // 更新 ActionType (行动类型)
+                if let actionType = result.actionType {
+                    entry.actionType = actionType.label
+                    entry.actionTypeConfidence = actionType.confidence
+                }
+
+                // 更新 Difficulty (难度)
+                if let difficulty = result.difficulty {
+                    entry.difficulty = difficulty.label
+                    entry.difficultyConfidence = difficulty.confidence
+                }
+
+                // 更新 Specificity (具体程度)
+                if let specificity = result.specificity {
+                    entry.specificity = specificity.label
+                    entry.specificityConfidence = specificity.confidence
+                }
+
+                // 记录分析时间
+                entry.analyzedAt = Date()
+
+                // 保存更新
+                do {
+                    try context.save()
+                    print("✅ 目标分析完成并保存: \(entry.goalText.prefix(20))...")
+                } catch {
+                    print("❌ 保存分析结果失败: \(error)")
+                }
+            }
+        } catch {
+            print("❌ 目标分析失败: \(error)")
         }
     }
 
