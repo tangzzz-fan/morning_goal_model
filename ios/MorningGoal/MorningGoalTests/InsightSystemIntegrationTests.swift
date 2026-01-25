@@ -109,7 +109,8 @@ final class InsightSystemIntegrationTests: XCTestCase {
     }
     
     func test_endToEnd_positiveStreak_generatesEncouragementAndSentimentInsight() async throws {
-        // 1. Simulate User Activity: 8 days of positive entries (Satisfies >= 7 entries check)
+        // ... (existing test code)
+        // 1. Simulate User Activity: 8 days of positive entries
         let today = Date()
         let calendar = Calendar.current
         
@@ -155,6 +156,38 @@ final class InsightSystemIntegrationTests: XCTestCase {
         if let insight = sentimentInsight, case let .sentimentTrend(direction) = insight {
             // Recent (0.9) > Historic (0.2) -> Up
             XCTAssertEqual(direction, "上升")
+        }
+    }
+
+    func test_mockDataService_populatesAnalysisFields() throws {
+        // Clear existing data
+        MockDataService.clearAllData(from: context)
+        
+        // Add mock data
+        MockDataService.addMockData(to: context)
+        
+        // Fetch valid entries
+        let request: NSFetchRequest<GoalEntry> = GoalEntry.fetchRequest()
+        let entries = try context.fetch(request)
+        
+        XCTAssertGreaterThan(entries.count, 0)
+        
+        // Verify fields are populated
+        for entry in entries {
+            // DateString and GoalText should always be present
+            XCTAssertNotNil(entry.dateString)
+            XCTAssertNotNil(entry.goalText)
+            
+            // Checking if analysis fields are populated for recent entries (MockDataService adds 7 days + history)
+            // The history entries (1 month ago etc) created by createMockEntry inside addMockData might NOT have analysis unless we updated that call too.
+            // Let's check the recent ones which definitely use mockText() -> analysis
+            
+            if let date = GoalEntry.dateFrom(entry.dateString), Date().timeIntervalSince(date) < 8 * 24 * 3600 {
+                // Recent entry
+                XCTAssertNotNil(entry.category, "Category should be populated")
+                XCTAssertGreaterThan(entry.categoryConfidence, 0.0, "Category confidence should be > 0")
+                XCTAssertNotNil(entry.sentiment, "Sentiment should be populated")
+            }
         }
     }
 }

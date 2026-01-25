@@ -2,11 +2,19 @@ import CoreData
 import Foundation
 
 enum CoreDataModelBuilder {
+    private static var _cachedModel: NSManagedObjectModel?
+
     static func makeModel() -> NSManagedObjectModel {
+        if let model = _cachedModel {
+            return model
+        }
+
         let model = NSManagedObjectModel()
         let goalEntry = makeGoalEntryEntity()
         let userSettings = makeUserSettingsEntity()
         model.entities = [goalEntry, userSettings]
+
+        _cachedModel = model
         return model
     }
 

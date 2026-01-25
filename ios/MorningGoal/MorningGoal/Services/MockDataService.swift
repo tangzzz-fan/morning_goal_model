@@ -7,24 +7,29 @@ enum MockDataService {
         let today = Date()
 
         // 1. 创建过去一周的数据（保持原有逻辑）
+        // 1. 创建过去一周的数据（保持原有逻辑）
         for dayOffset in 0 ..< 7 {
             guard let date = calendar.date(byAdding: .day, value: -dayOffset, to: today) else { continue }
-            createMockEntry(date: date, text: mockText(for: dayOffset), in: context)
+            let mock = mockText(for: dayOffset)
+            createMockEntry(date: date, text: mock.text, in: context, analysis: mock)
         }
 
         // 2. 增加一个月前的数据（用于测试“历史上的今天”）
         if let oneMonthAgo = calendar.date(byAdding: .month, value: -1, to: today) {
-            createMockEntry(date: oneMonthAgo, text: "一个月前的今天：开始构思这个项目，充满激情！", in: context)
+            let mock = MockEntryData(text: "一个月前的今天：开始构思这个项目，充满激情！", category: "工作", action: "创意", sentiment: "积极", score: 0.95)
+            createMockEntry(date: oneMonthAgo, text: mock.text, in: context, analysis: mock)
         }
 
         // 3. 增加一周前的数据（用于测试“历史上的今天”）
         if let oneWeekAgo = calendar.date(byAdding: .day, value: -7, to: today) {
-            createMockEntry(date: oneWeekAgo, text: "一周前的今天：还在调整 UI 细节。", in: context)
+            let mock = MockEntryData(text: "一周前的今天：还在调整 UI 细节。", category: "工作", action: "工作", sentiment: "中性", score: 0.60)
+            createMockEntry(date: oneWeekAgo, text: mock.text, in: context, analysis: mock)
         }
 
         // 4. 增加一年前的数据（用于测试“历史上的今天”）
         if let oneYearAgo = calendar.date(byAdding: .year, value: -1, to: today) {
-            createMockEntry(date: oneYearAgo, text: "一年前的今天：第一次尝试 SwiftUI，感觉很神奇。", in: context)
+            let mock = MockEntryData(text: "一年前的今天：第一次尝试 SwiftUI，感觉很神奇。", category: "学习", action: "学习", sentiment: "积极", score: 0.90)
+            createMockEntry(date: oneYearAgo, text: mock.text, in: context, analysis: mock)
         }
 
         // 保存到数据库
@@ -36,7 +41,7 @@ enum MockDataService {
         }
     }
 
-    private static func createMockEntry(date: Date, text: String, in context: NSManagedObjectContext) {
+    private static func createMockEntry(date: Date, text: String, in context: NSManagedObjectContext, analysis: MockEntryData? = nil) {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd"
         let dateString = dateFormatter.string(from: date)
@@ -45,24 +50,64 @@ enum MockDataService {
         fetchRequest.predicate = NSPredicate(format: "dateString == %@", dateString)
         fetchRequest.fetchLimit = 1
 
-        if (try? context.fetch(fetchRequest).first) == nil {
-            let entry = GoalEntry(context: context)
+        let entry: GoalEntry
+        if let existing = try? context.fetch(fetchRequest).first {
+            entry = existing
+        } else {
+            entry = GoalEntry(context: context)
             entry.dateString = dateString
-            entry.lastUpdated = date
-            entry.goalText = text
+        }
+
+        entry.lastUpdated = date
+        entry.goalText = text
+
+        // Populate analysis fields
+        if let a = analysis {
+            entry.category = a.category
+            entry.categoryConfidence = Double.random(in: 0.7 ... 0.99)
+
+            entry.actionType = a.action
+            entry.actionTypeConfidence = Double.random(in: 0.7 ... 0.95)
+
+            entry.sentiment = a.sentiment
+            entry.sentimentScore = a.score
+
+            entry.urgency = "medium"
+            entry.urgencyConfidence = 0.8
+
+            entry.timeFrame = "today"
+            entry.timeFrameConfidence = 0.95
+
+            entry.difficulty = "moderate"
+            entry.difficultyConfidence = 0.75
+
+            entry.specificity = "specific"
+            entry.specificityConfidence = 0.85
+
+            entry.analyzedAt = Date()
+        } else {
+            // print("WARNING: No analysis provided for \(dateString)")
         }
     }
 
-    private static func mockText(for dayOffset: Int) -> String {
+    private struct MockEntryData {
+        let text: String
+        let category: String
+        let action: String
+        let sentiment: String
+        let score: Double
+    }
+
+    private static func mockText(for dayOffset: Int) -> MockEntryData {
         switch dayOffset {
-        case 0: return "完成今天的核心功能开发，确保代码质量"
-        case 1: return "优化用户界面交互，提升用户体验"
-        case 2: return "修复已知的bug，完善测试用例"
-        case 3: return "学习新的iOS开发技术，提升技能"
-        case 4: return "整理项目文档，更新技术说明"
-        case 5: return "与团队沟通项目进展，协调工作安排"
-        case 6: return "回顾本周工作，制定下周计划"
-        default: return "完成今日目标，保持专注"
+        case 0: return MockEntryData(text: "完成今天的核心功能开发，确保代码质量", category: "工作", action: "工作", sentiment: "积极", score: 0.85)
+        case 1: return MockEntryData(text: "优化用户界面交互，提升用户体验", category: "工作", action: "创意", sentiment: "积极", score: 0.92)
+        case 2: return MockEntryData(text: "修复已知的bug，完善测试用例", category: "工作", action: "工作", sentiment: "中性", score: 0.60)
+        case 3: return MockEntryData(text: "学习新的iOS开发技术，提升技能", category: "学习", action: "学习", sentiment: "积极", score: 0.88)
+        case 4: return MockEntryData(text: "整理项目文档，更新技术说明", category: "工作", action: "工作", sentiment: "中性", score: 0.55)
+        case 5: return MockEntryData(text: "与团队沟通项目进展，协调工作安排", category: "社交", action: "社交", sentiment: "积极", score: 0.75)
+        case 6: return MockEntryData(text: "回顾本周工作，制定下周计划", category: "生活", action: "生活", sentiment: "积极", score: 0.80)
+        default: return MockEntryData(text: "完成今日目标，保持专注", category: "生活", action: "生活", sentiment: "积极", score: 0.70)
         }
     }
 
