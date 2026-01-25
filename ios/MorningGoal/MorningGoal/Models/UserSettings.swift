@@ -1,7 +1,6 @@
 import CoreData
 import Foundation
 
-@objc(UserSettings)
 final class UserSettings: NSManagedObject {
     @NSManaged var morningStartHour: Int16
     @NSManaged var morningStartMinute: Int16

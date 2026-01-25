@@ -1,7 +1,6 @@
 import CoreData
 import Foundation
 
-@objc(GoalEntry)
 final class GoalEntry: NSManagedObject, Identifiable {
     // Identifiable conformance
     var id: NSManagedObjectID { objectID }
