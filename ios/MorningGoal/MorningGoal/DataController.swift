@@ -15,10 +15,22 @@ final class DataController: ObservableObject, StorageService {
     private var syncMonitor: CloudKitSyncMonitor?
     private var cancellables = Set<AnyCancellable>()
 
+    // MARK: - Preview Helper
+
+    static var preview: DataController = {
+        let controller = DataController(inMemory: true)
+        let viewContext = controller.container.viewContext
+
+        // Add sample data here if needed
+
+        try? viewContext.save()
+        return controller
+    }()
+
     // CloudKit can be disabled for testing or if having persistent issues
     private static let cloudKitEnabled = true // Set to false to disable CloudKit sync
 
-    private init() {
+    init(inMemory: Bool = false) {
         // Enable verbose logging for debugging
         UserDefaults.standard.set(true, forKey: "CoreDataCloudKitDebug")
 
@@ -30,11 +42,15 @@ final class DataController: ObservableObject, StorageService {
             fatalError("Failed to retrieve a persistent store description.")
         }
 
-        // Explicitly set the URL to ensure consistency
-        description.url = NSPersistentContainer.defaultDirectoryURL().appendingPathComponent("MorningGoalModel.sqlite")
+        if inMemory {
+            description.url = URL(fileURLWithPath: "/dev/null")
+        } else {
+            // Explicitly set the URL to ensure consistency
+            description.url = NSPersistentContainer.defaultDirectoryURL().appendingPathComponent("MorningGoalModel.sqlite")
+        }
 
         // Config CloudKit Container Options (only if enabled)
-        if Self.cloudKitEnabled {
+        if Self.cloudKitEnabled && !inMemory {
             let cloudKitOptions = NSPersistentCloudKitContainerOptions(containerIdentifier: "iCloud.com.tango.MorningGoal")
             description.cloudKitContainerOptions = cloudKitOptions
             debugPrint("☁️ CloudKit sync: ENABLED")

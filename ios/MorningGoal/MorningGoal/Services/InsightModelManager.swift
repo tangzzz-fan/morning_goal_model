@@ -191,9 +191,7 @@ final class InsightModelManager: ObservableObject {
 
     // MARK: - Initialization
 
-    init() {
-        // 无参数初始化，tokenizer 在 loadModels 中异步加载
-    }
+    init() {}
 
     /// 异步加载所有模型
     func loadModels() async {

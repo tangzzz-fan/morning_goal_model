@@ -16,7 +16,7 @@ struct ModelTestView: View {
     @FetchRequest(entity: GoalEntry.entity(), sortDescriptors: []) private var entries: FetchedResults<GoalEntry>
     @State private var selectedIndex: Int?
     @State private var metrics: TestMetrics?
-    @State private var lastResult: AnalysisResult?
+    @State private var lastResult: GoalAnalysisResult?
     @State private var isRunning: Bool = false
     private let logger = Logger(subsystem: "com.morninggoal.app", category: "ml-bench")
     var body: some View {
@@ -50,11 +50,11 @@ struct ModelTestView: View {
         }.navigationTitle("模型测试")
     }
 
-    private func ruleExpected(_ text: String) async -> AnalysisResult {
+    private func ruleExpected(_ text: String) async -> GoalAnalysisResult {
         do {
             return try await RuleBasedAnalysisService().analyzeGoal(text)
         } catch {
-            return AnalysisResult(
+            return GoalAnalysisResult(
                 category: "个人发展",
                 categoryConfidence: 0.5,
                 sentiment: "中性",

@@ -8,6 +8,8 @@
 import CoreML
 import SwiftUI
 
+#if DEBUG
+
 /// 洞察模型调试视图
 @MainActor
 struct InsightModelDebugTab: View {
@@ -639,3 +641,5 @@ struct InsightModelDebugTab: View {
         }
     }
 }
+
+#endif

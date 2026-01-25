@@ -10,23 +10,24 @@ struct InsightCardView: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Image(systemName: insight.iconName)
-                    .foregroundColor(.blue)
+                    .foregroundColor(Color.Design.accentCyan)
                     .font(.title2)
 
                 Text(insight.title)
-                    .font(.headline)
+                    .font(Typography.headline)
+                    .foregroundColor(Color.Design.softWhite)
 
                 Spacer()
             }
 
             Text(insight.description)
-                .font(.body)
-                .foregroundColor(.secondary)
+                .font(Typography.body)
+                .foregroundColor(Color.Design.mutedGray)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .padding()
-        .background(Color(.systemBackground))
-        .cornerRadius(12)
+        .background(Color.Design.cardBackground)
+        .cornerRadius(CornerRadius.md)
         .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
     }
 }

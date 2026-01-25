@@ -8,6 +8,9 @@ extension Color {
         static let mutedGray = Color(hex: "A0A0A0") // 次要文本色 - 浅灰
         static let darkIndigo = Color(hex: "1A1F3D") // 深色调背景
         static let lightGold = Color(hex: "FFD700") // 浅金色（用于高光）
+        static let accentPink = Color(hex: "FF6B6B") // 强调色 - 粉红
+        static let accentCyan = Color(hex: "4ECDC4") // 强调色 - 青色
+        static let cardBackground = Color(hex: "252A48") // 卡片背景
     }
 
     init(hex: String) {

@@ -3,7 +3,7 @@ import SwiftUI
 
 struct ProfileValidationView: View {
     @State private var inputText: String = ""
-    @State private var analysisResult: AnalysisResult?
+    @State private var analysisResult: GoalAnalysisResult?
     @State private var inferenceTime: Double = 0
     @State private var isAnalyzing: Bool = false
     @State private var errorMessage: String?

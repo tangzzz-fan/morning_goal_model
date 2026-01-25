@@ -236,5 +236,35 @@ final class InsightEngineTests: XCTestCase {
         let comparisonInsight = Insight.comparison(thisWeek: 10, lastWeek: 8, changePercent: 25)
         XCTAssertEqual(comparisonInsight.id, "comparison")
         XCTAssertEqual(comparisonInsight.priority, .medium)
+
+        let recurringInsight = Insight.recurringGoal(goalText: "Run", count: 5, category: "Health")
+        XCTAssertEqual(recurringInsight.id, "recurring_goal")
+        XCTAssertEqual(recurringInsight.priority, .medium)
+
+        let achievabilityInsight = Insight.achievability(level: "High", suggestion: "Good job")
+        XCTAssertEqual(achievabilityInsight.id, "achievability")
+        XCTAssertEqual(achievabilityInsight.priority, .high)
+    }
+
+    // MARK: - 测试：鼓励机制
+
+    func test_generateEncouragement_returnsInsight_whenStreakExists() {
+        // 创建 7 天连续的记录
+        for i in 0 ..< 7 {
+            _ = createEntry(dateString: dateString(daysAgo: i), category: "健康")
+        }
+        try? context.save()
+        
+        // 我们需要确保 generateEncouragement 内部使用了 StreakService 或者有自己的计算逻辑
+        // 根据 InsightEngine.swift 的逻辑，它可能会根据日期连续性计算
+        let insights = engine.generateInsights()
+        
+        let encouragement = insights.first { $0.id == "encouragement" }
+        XCTAssertNotNil(encouragement, "连续打卡应触发鼓励洞察")
+        
+        if case let .encouragement(streakDays, _) = encouragement {
+            // 具体的 streak 计算取决于实现，这里至少应该 > 1
+            XCTAssertGreaterThanOrEqual(streakDays, 2)
+        }
     }
 }

@@ -67,11 +67,12 @@ struct RootView: View {
                             Label("统计", systemImage: "chart.bar.fill")
                         }
 
-                    // Tab 3: Insight Model Debug
+                    #if DEBUG
                     InsightModelDebugTab()
                         .tabItem {
                             Label("洞察", systemImage: "brain.head.profile")
                         }
+                    #endif
                 }
                 // Apply global accent color
                 .tint(Color.Design.sunriseGold)
@@ -145,10 +146,6 @@ struct RootView: View {
         }
         .sheet(isPresented: $showQualityDashboard) {
             NavigationStack { ModelQualityDashboard() }
-                .environment(\.managedObjectContext, context)
-        }
-        .sheet(isPresented: $showEnhancedQualityDashboard) {
-            NavigationStack { EnhancedModelQualityDashboard() }
                 .environment(\.managedObjectContext, context)
         }
         .sheet(isPresented: $showModelDebug) {

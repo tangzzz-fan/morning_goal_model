@@ -17,6 +17,7 @@ class InsightViewModel: ObservableObject {
     @Published var sentimentTrend: SentimentTrendResult?
     @Published var goalCountTrend: [TrendDataPoint] = []
     @Published var weekdayDistribution: [DistributionItem] = []
+    @Published var insights: [Insight] = []
 
     @Published var isLoading = false
     @Published var errorMessage: String?
@@ -24,11 +25,13 @@ class InsightViewModel: ObservableObject {
     // MARK: - Dependencies
 
     private let aggregator: GoalDataAggregator
+    private let engine: InsightEngine
 
     // MARK: - Initialization
 
     init(context: NSManagedObjectContext) {
         self.aggregator = GoalDataAggregator(viewContext: context)
+        self.engine = InsightEngine(context: context)
     }
 
     // MARK: - Public Methods
@@ -47,14 +50,16 @@ class InsightViewModel: ObservableObject {
                 async let sentimentResult = aggregator.getSentimentTrend(days: days)
                 async let countResult = aggregator.getGoalCountTrend(days: days)
                 async let weekdayResult = aggregator.getWeekdayDistribution(period: selectedPeriod)
+                async let insightsResult = engine.generateInsights(for: days)
 
                 // 等待所有任务完成
-                let (newStats, newTopics, newSentiment, newCounts, newWeekdays) = try await(
+                let (newStats, newTopics, newSentiment, newCounts, newWeekdays, newInsights) = try await(
                     statsResult,
                     topicResult,
                     sentimentResult,
                     countResult,
-                    weekdayResult
+                    weekdayResult,
+                    insightsResult
                 )
 
                 // 更新 UI 状态
@@ -63,6 +68,7 @@ class InsightViewModel: ObservableObject {
                 self.sentimentTrend = newSentiment
                 self.goalCountTrend = newCounts
                 self.weekdayDistribution = newWeekdays
+                self.insights = newInsights
                 self.isLoading = false
 
             } catch {

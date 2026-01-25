@@ -99,7 +99,7 @@ struct PredictionTestSectionView: View {
 }
 
 struct PredictionResultSectionView: View {
-    let result: AnalysisResult
+    let result: GoalAnalysisResult
     let categories: [String]
     let sentiments: [String]
     @Binding var selectedCategories: Set<String>

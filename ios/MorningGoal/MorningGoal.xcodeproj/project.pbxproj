@@ -28,6 +28,20 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		18246DCD2F26103E00DF12EA /* Exceptions for "MorningGoal" folder in "MorningGoalTests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				coreml/ActiontypeClassifier_Updatable.mlpackage,
+				coreml/BertFeatureExtractor.mlpackage,
+				coreml/DifficultyClassifier_Updatable.mlpackage,
+				coreml/SentimentClassifier_Updatable.mlpackage,
+				coreml/SpecificityClassifier_Updatable.mlpackage,
+				coreml/TimeframeClassifier_Updatable.mlpackage,
+				coreml/TopicClassifier_Updatable.mlpackage,
+				coreml/UrgencyClassifier_Updatable.mlpackage,
+			);
+			target = 1894C5F42EC4D4CA0075AD7C /* MorningGoalTests */;
+		};
 		18D4D95A2F1E9257000A00FE /* Exceptions for "MorningGoal" folder in "MorningGoal" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -42,6 +56,7 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				18D4D95A2F1E9257000A00FE /* Exceptions for "MorningGoal" folder in "MorningGoal" target */,
+				18246DCD2F26103E00DF12EA /* Exceptions for "MorningGoal" folder in "MorningGoalTests" target */,
 			);
 			path = MorningGoal;
 			sourceTree = "<group>";

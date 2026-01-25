@@ -1,6 +1,8 @@
 import CoreData
 import SwiftUI
 
+#if DEBUG
+
 struct InsightEngineDebugView: View {
     @State private var selectedScenario: Scenario = .balanced
     @State private var insights: [Insight] = []
@@ -8,7 +10,8 @@ struct InsightEngineDebugView: View {
 
     // 独立的内存 Core Data Stack 用于生成测试数据
     private let container: NSPersistentContainer = {
-        let container = NSPersistentContainer(name: "MorningGoal")
+        let model = CoreDataModelBuilder.makeModel()
+        let container = NSPersistentContainer(name: "MorningGoalModel", managedObjectModel: model)
         let description = NSPersistentStoreDescription()
         description.type = NSInMemoryStoreType
         container.persistentStoreDescriptions = [description]
@@ -249,7 +252,7 @@ struct InsightEngineDebugView: View {
         entry.specificityConfidence = 0.8
 
         // 设置用户修正值以确保 effective 属性工作
-        entry.userCorrectedCategory = nil
+        entry.categoryUserCorrected = nil
 
         return entry
     }
@@ -325,3 +328,5 @@ struct InsightEngineDebugView: View {
         }
     }
 }
+
+#endif

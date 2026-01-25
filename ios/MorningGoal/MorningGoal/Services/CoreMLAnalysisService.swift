@@ -4,7 +4,7 @@ import Foundation
 
 // MARK: - 分析结果模型
 
-struct AnalysisResult {
+struct GoalAnalysisResult {
     // MARK: - 原有维度
 
     let category: String // Topic (主题)
@@ -74,7 +74,11 @@ struct AnalysisResult {
     }
 
     /// 从 InsightAnalysisResult 转换
-    init(from insightResult: InsightAnalysisResult) {
+    init(
+        from insightResult: InsightAnalysisResult,
+        topCategories: [(name: String, confidence: Double)]? = nil,
+        topSentiments: [(name: String, score: Double)]? = nil
+    ) {
         self.category = insightResult.topic?.label ?? "unknown"
         self.categoryConfidence = insightResult.topic?.confidence ?? 0.0
         self.sentiment = insightResult.sentiment?.label ?? "中性"
@@ -90,8 +94,8 @@ struct AnalysisResult {
         self.specificity = insightResult.specificity?.label
         self.specificityConfidence = insightResult.specificity?.confidence ?? 0.0
         self.embedding = nil // 可以通过 InsightModelManager 获取
-        self.topCategories = nil
-        self.topSentiments = nil
+        self.topCategories = topCategories
+        self.topSentiments = topSentiments
     }
 }
 
@@ -104,8 +108,8 @@ struct TrainingSample {
 // MARK: - 分析服务协议
 
 protocol AnalysisService {
-    func analyzeGoal(_ text: String) async throws -> AnalysisResult
-    func analyzeBatch(_ entries: [GoalEntry]) async throws -> [AnalysisResult]
+    func analyzeGoal(_ text: String) async throws -> GoalAnalysisResult
+    func analyzeBatch(_ entries: [GoalEntry]) async throws -> [GoalAnalysisResult]
     func updateModel(with corrections: [TrainingSample]) async throws
     func getModelVersion() -> String
 }
@@ -296,7 +300,7 @@ class RuleBasedAnalysisService: AnalysisService {
 
     // MARK: - 推理接口
 
-    func analyzeGoal(_ text: String) async throws -> AnalysisResult {
+    func analyzeGoal(_ text: String) async throws -> GoalAnalysisResult {
         guard !text.isEmpty else {
             throw AnalysisError.invalidInput
         }
@@ -307,7 +311,7 @@ class RuleBasedAnalysisService: AnalysisService {
         // 情感分析
         let sentimentResult = analyzeSentiment(text)
 
-        return AnalysisResult(
+        return GoalAnalysisResult(
             category: category.name,
             categoryConfidence: category.confidence,
             sentiment: sentimentResult.sentiment,
@@ -315,8 +319,8 @@ class RuleBasedAnalysisService: AnalysisService {
         )
     }
 
-    func analyzeBatch(_ entries: [GoalEntry]) async throws -> [AnalysisResult] {
-        var results: [AnalysisResult] = []
+    func analyzeBatch(_ entries: [GoalEntry]) async throws -> [GoalAnalysisResult] {
+        var results: [GoalAnalysisResult] = []
 
         for entry in entries {
             let result = try await analyzeGoal(entry.goalText)

@@ -28,7 +28,7 @@ final class ModelQualityValidator {
     func validateModel(_ service: AnalysisService, with testData: [TestSample]) async -> ValidationResult {
         logger.log("starting_model_validation samples=\(testData.count)")
 
-        var predictions: [(predicted: AnalysisResult, actual: TestSample)] = []
+        var predictions: [(predicted: GoalAnalysisResult, actual: TestSample)] = []
         var inferenceTimes: [Double] = []
         var confidences: [Double] = []
 
@@ -54,7 +54,7 @@ final class ModelQualityValidator {
         let f1Score = 2 * (precision * recall) / (precision + recall)
 
         let avgInferenceTime = inferenceTimes.isEmpty ? 0 : inferenceTimes.reduce(0, +) / Double(inferenceTimes.count)
-        let memoryUsage = memoryMB()
+        let memoryUsage = getMemoryUsage()
 
         logger.log("validation_complete accuracy=\(String(format: "%.3f", accuracy)) f1=\(String(format: "%.3f", f1Score))")
 
@@ -114,7 +114,7 @@ final class ModelQualityValidator {
         return "\(assessment) (得分: \(String(format: "%.1f", score)))"
     }
 
-    private func calculateAccuracy(_ predictions: [(predicted: AnalysisResult, actual: TestSample)]) -> Double {
+    private func calculateAccuracy(_ predictions: [(predicted: GoalAnalysisResult, actual: TestSample)]) -> Double {
         guard !predictions.isEmpty else { return 0 }
 
         let correct = predictions.filter { prediction in
@@ -125,7 +125,7 @@ final class ModelQualityValidator {
         return Double(correct.count) / Double(predictions.count)
     }
 
-    private func calculatePrecision(_ predictions: [(predicted: AnalysisResult, actual: TestSample)]) -> Double {
+    private func calculatePrecision(_ predictions: [(predicted: GoalAnalysisResult, actual: TestSample)]) -> Double {
         guard !predictions.isEmpty else { return 0 }
 
         let categories = Set(predictions.map { $0.predicted.category })
@@ -143,7 +143,7 @@ final class ModelQualityValidator {
         return precisions.isEmpty ? 0 : precisions.reduce(0, +) / Double(precisions.count)
     }
 
-    private func calculateRecall(_ predictions: [(predicted: AnalysisResult, actual: TestSample)]) -> Double {
+    private func calculateRecall(_ predictions: [(predicted: GoalAnalysisResult, actual: TestSample)]) -> Double {
         guard !predictions.isEmpty else { return 0 }
 
         let categories = Set(predictions.map { $0.actual.expectedCategory })

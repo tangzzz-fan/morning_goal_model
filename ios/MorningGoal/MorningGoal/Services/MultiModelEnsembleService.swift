@@ -30,10 +30,10 @@ final class MultiModelEnsembleService: AnalysisService {
         self.models = modelServices
     }
 
-    func analyzeGoal(_ text: String) async throws -> AnalysisResult {
+    func analyzeGoal(_ text: String) async throws -> GoalAnalysisResult {
         logger.log("starting_ensemble_analysis text_length=\(text.count)")
 
-        var results: [AnalysisResult] = []
+        var results: [GoalAnalysisResult] = []
         var errors: [Error] = []
 
         for (index, model) in models.enumerated() {
@@ -55,8 +55,8 @@ final class MultiModelEnsembleService: AnalysisService {
         return ensembleResults(results)
     }
 
-    func analyzeBatch(_ entries: [GoalEntry]) async throws -> [AnalysisResult] {
-        var batchResults: [AnalysisResult] = []
+    func analyzeBatch(_ entries: [GoalEntry]) async throws -> [GoalAnalysisResult] {
+        var batchResults: [GoalAnalysisResult] = []
 
         for entry in entries {
             let result = try await analyzeGoal(entry.goalText)
@@ -66,7 +66,7 @@ final class MultiModelEnsembleService: AnalysisService {
         return batchResults
     }
 
-    nonisolated func analyzeBatchIsolated(_ entries: [GoalEntry]) async throws -> [AnalysisResult] {
+    nonisolated func analyzeBatchIsolated(_ entries: [GoalEntry]) async throws -> [GoalAnalysisResult] {
         return try await analyzeBatch(entries)
     }
 
@@ -79,14 +79,14 @@ final class MultiModelEnsembleService: AnalysisService {
         return "ensemble-v1.0"
     }
 
-    private func ensembleResults(_ results: [AnalysisResult]) -> AnalysisResult {
+    private func ensembleResults(_ results: [GoalAnalysisResult]) -> GoalAnalysisResult {
         let categoryVotes = aggregateVotes(results.map { ($0.category, $0.categoryConfidence) })
         let sentimentVotes = aggregateVotes(results.map { ($0.sentiment, $0.sentimentScore) })
 
         guard let bestCategory = categoryVotes.first,
               let bestSentiment = sentimentVotes.first
         else {
-            return results.first ?? AnalysisResult(
+            return results.first ?? GoalAnalysisResult(
                 category: "其他",
                 categoryConfidence: 0.5,
                 sentiment: "中性",
@@ -99,11 +99,18 @@ final class MultiModelEnsembleService: AnalysisService {
 
         logger.log("ensemble_decision category=\(bestCategory.key) confidence=\(bestCategory.value) models_used=\(results.count)")
 
-        return AnalysisResult(
+        // For simplicity, we just use the first model's top categories if we can't merge them easily
+        // Or we could merge them.
+        let topCats = results.first?.topCategories
+        let topSens = results.first?.topSentiments
+
+        return GoalAnalysisResult(
             category: bestCategory.key,
-            categoryConfidence: avgCatConfidence,
+            categoryConfidence: bestCategory.value, // This is voting score, not raw probability
             sentiment: bestSentiment.key,
-            sentimentScore: avgSenConfidence
+            sentimentScore: bestSentiment.value,
+            topCategories: topCats,
+            topSentiments: topSens
         )
     }
 

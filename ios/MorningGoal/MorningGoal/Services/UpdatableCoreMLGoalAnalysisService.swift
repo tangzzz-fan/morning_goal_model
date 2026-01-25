@@ -97,7 +97,7 @@ final class UpdatableCoreMLGoalAnalysisService: AnalysisService {
 
     // MARK: - AnalysisService Protocol
 
-    func analyzeGoal(_ text: String) async throws -> AnalysisResult {
+    func analyzeGoal(_ text: String) async throws -> GoalAnalysisResult {
         guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             throw AnalysisError.invalidInput
         }
@@ -124,54 +124,44 @@ final class UpdatableCoreMLGoalAnalysisService: AnalysisService {
 
         let feOutput = try await featureExtractor.prediction(from: feInput)
 
-        guard let embedding = feOutput.featureValue(for: "embedding")?.multiArrayValue,
-              let sentimentLogits = feOutput.featureValue(for: "sentiment_logits")?.multiArrayValue
-        else {
+        guard let embedding = feOutput.featureValue(for: "embedding")?.multiArrayValue else {
             throw AnalysisError.modelNotLoaded
         }
 
         // 4. Run k-NN Classifier with embedding
-        // Embedding is already shape [768] from Feature Extractor
         let knnInput = try MLDictionaryFeatureProvider(dictionary: [
             "embedding": MLFeatureValue(multiArray: embedding)
         ])
 
         let knnOutput = try await knnClassifier.prediction(from: knnInput)
 
-        // 5. Extract results
-        guard let category = knnOutput.featureValue(for: "category")?.stringValue else {
+        // 5. Parse Output
+        guard let label = knnOutput.featureValue(for: "label")?.stringValue,
+              let probs = knnOutput.featureValue(for: "probabilities")?.dictionaryValue as? [String: Double]
+        else {
             throw AnalysisError.modelNotLoaded
         }
 
-        // Get category probability (if available)
-        var categoryConfidence = 0.8 // default
-        if let probsDict = knnOutput.featureValue(for: "categoryProbs")?.dictionaryValue as? [String: Double] {
-            categoryConfidence = probsDict[category] ?? 0.8
-        }
-
-        // 6. Process sentiment logits
-        let senProbs = applySoftmax(sentimentLogits)
-        let topSenResults = getTopK(senProbs, k: 3)
-
-        guard let bestSen = topSenResults.first else {
-            throw AnalysisError.invalidInput
-        }
-
-        let senLabel = sentiments.indices.contains(bestSen.index) ? sentiments[bestSen.index] : "中性"
-
+        let confidence = probs[label] ?? 0.0
         let t1 = CFAbsoluteTimeGetCurrent()
-        logger.log("inference_ms=\(String(format: "%.2f", (t1 - t0) * 1000)), category=\(category), sentiment=\(senLabel)")
+        logger.log("inference_ms=\(String(format: "%.2f", (t1 - t0) * 1000)), category=\(label)")
 
-        return AnalysisResult(
-            category: category,
-            categoryConfidence: categoryConfidence,
-            sentiment: senLabel,
-            sentimentScore: bestSen.probability
+        // Sort probabilities for top-k
+        let sortedProbs = probs.sorted { $0.value > $1.value }
+        let topCats = sortedProbs.prefix(3).map { ($0.key, $0.value) }
+
+        return GoalAnalysisResult(
+            category: label,
+            categoryConfidence: confidence,
+            sentiment: "中性", // k-NN doesn't predict sentiment
+            sentimentScore: 0.5,
+            topCategories: topCats.map { (name: $0.0, confidence: $0.1) },
+            topSentiments: nil
         )
     }
 
-    func analyzeBatch(_ entries: [GoalEntry]) async throws -> [AnalysisResult] {
-        var results: [AnalysisResult] = []
+    func analyzeBatch(_ entries: [GoalEntry]) async throws -> [GoalAnalysisResult] {
+        var results: [GoalAnalysisResult] = []
         for entry in entries {
             let result = try await analyzeGoal(entry.goalText)
             results.append(result)
@@ -179,7 +169,7 @@ final class UpdatableCoreMLGoalAnalysisService: AnalysisService {
         return results
     }
 
-    nonisolated func analyzeBatchIsolated(_ entries: [GoalEntry]) async throws -> [AnalysisResult] {
+    nonisolated func analyzeBatchIsolated(_ entries: [GoalEntry]) async throws -> [GoalAnalysisResult] {
         return try await analyzeBatch(entries)
     }
 

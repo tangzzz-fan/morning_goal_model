@@ -13,11 +13,6 @@ struct InsightStatsTab: View {
     // ViewModel
     @StateObject private var viewModel: InsightViewModel
 
-    // 相似目标搜索
-    @State private var searchText = ""
-    @State private var similarGoals: [SimilarGoalResult] = []
-    @State private var isSearching = false
-
     init(context: NSManagedObjectContext) {
         _viewModel = StateObject(wrappedValue: InsightViewModel(context: context))
     }
@@ -40,6 +35,11 @@ struct InsightStatsTab: View {
                             // 快速统计卡片
                             if let stats = viewModel.stats {
                                 quickStatsSection(stats)
+                            }
+
+                            // 智能洞察
+                            if !viewModel.insights.isEmpty {
+                                insightsSection
                             }
 
                             // 主题分布
@@ -86,6 +86,18 @@ struct InsightStatsTab: View {
             }
             .onAppear {
                 viewModel.loadData()
+            }
+        }
+    }
+
+    // MARK: - 智能洞察
+
+    private var insightsSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            sectionHeader("智能洞察", icon: "sparkles")
+
+            ForEach(viewModel.insights, id: \.id) { insight in
+                InsightCardView(insight: insight)
             }
         }
     }

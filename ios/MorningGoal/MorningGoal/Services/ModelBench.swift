@@ -15,9 +15,8 @@ enum ModelBench {
     static func run(in context: NSManagedObjectContext) async -> BenchSummary {
         let logger = Logger(subsystem: "com.morninggoal.app", category: "ml-bench")
 
-        // 使用增强的自适应模型服务以获得更高质量
+        // 使用自适应模型服务
         let services: [AnalysisService] = [
-            (try? EnhancedAdaptiveModelService()) as AnalysisService?,
             (try? AdaptiveModelService()) as AnalysisService?,
             (try? CoreMLGoalAnalysisService()) as AnalysisService?
         ].compactMap { $0 }

@@ -40,7 +40,7 @@ final class CoreMLGoalAnalysisService: AnalysisService {
         }
     }
 
-    func analyzeGoal(_ text: String) async throws -> AnalysisResult {
+    func analyzeGoal(_ text: String) async throws -> GoalAnalysisResult {
         guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             throw AnalysisError.invalidInput
         }
@@ -98,19 +98,18 @@ final class CoreMLGoalAnalysisService: AnalysisService {
             logger.warning("low_confidence_detected cat=\(bestCat.probability) sen=\(bestSen.probability)")
         }
 
-        let catLabel = categories.indices.contains(bestCat.index) ? categories[bestCat.index] : String(bestCat.index)
-        let senLabel = sentiments.indices.contains(bestSen.index) ? sentiments[bestSen.index] : String(bestSen.index)
-
-        return AnalysisResult(
-            category: catLabel,
+        return GoalAnalysisResult(
+            category: categories[bestCat.index],
             categoryConfidence: bestCat.probability,
-            sentiment: senLabel,
-            sentimentScore: bestSen.probability
+            sentiment: sentiments[bestSen.index],
+            sentimentScore: bestSen.probability,
+            topCategories: topCatResults.map { (categories[$0.index], $0.probability) },
+            topSentiments: topSenResults.map { (sentiments[$0.index], $0.probability) }
         )
     }
 
-    func analyzeBatch(_ entries: [GoalEntry]) async throws -> [AnalysisResult] {
-        var results: [AnalysisResult] = []
+    func analyzeBatch(_ entries: [GoalEntry]) async throws -> [GoalAnalysisResult] {
+        var results: [GoalAnalysisResult] = []
         for entry in entries {
             let result = try await analyzeGoal(entry.goalText)
             results.append(result)
@@ -118,7 +117,7 @@ final class CoreMLGoalAnalysisService: AnalysisService {
         return results
     }
 
-    nonisolated func analyzeBatchIsolated(_ entries: [GoalEntry]) async throws -> [AnalysisResult] {
+    nonisolated func analyzeBatchIsolated(_ entries: [GoalEntry]) async throws -> [GoalAnalysisResult] {
         return try await analyzeBatch(entries)
     }
 

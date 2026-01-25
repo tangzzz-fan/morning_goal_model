@@ -18,7 +18,7 @@ struct ModelDebugView: View {
     private var existingGoals: FetchedResults<GoalEntry>
 
     @State private var inputText = ""
-    @State private var predictionResult: AnalysisResult?
+    @State private var predictionResult: GoalAnalysisResult?
     @State private var isAnalyzing = false
     @State private var errorMessage: String?
 
