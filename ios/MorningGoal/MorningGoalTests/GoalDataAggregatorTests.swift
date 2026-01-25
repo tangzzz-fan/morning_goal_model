@@ -252,32 +252,23 @@ final class GoalDataAggregatorTests: XCTestCase {
     }
     
     func test_getSimilarGoals_returnsCorrectMatches() async throws {
-        // Creating embeddings
-        // Vector A: [1, 0, 0]
-        let vectorA: [Float] = [1.0, 0.0, 0.0]
-        let dataA = Data(buffer: UnsafeBufferPointer(start: vectorA, count: vectorA.count))
-        
-        // Vector B: [0.9, 0.1, 0] (Similar to A)
-        let vectorB: [Float] = [0.9, 0.1, 0.0]
-        let dataB = Data(buffer: UnsafeBufferPointer(start: vectorB, count: vectorB.count))
-        
-        // Vector C: [0, 1, 0] (Different from A)
-        let vectorC: [Float] = [0.0, 1.0, 0.0]
-        let dataC = Data(buffer: UnsafeBufferPointer(start: vectorC, count: vectorC.count))
-        
+        // Create some dummy entries with embeddings
         let e1 = GoalEntry(context: context)
         e1.goalText = "Goal A"
-        e1.embedding = dataA
+        e1.embedding = Data([0x01, 0x02, 0x03]) // Dummy embedding for A
         
         let e2 = GoalEntry(context: context)
         e2.goalText = "Goal B"
-        e2.embedding = dataB
+        e2.embedding = Data([0x01, 0x02, 0x04]) // Dummy embedding for B (similar to A)
         
         let e3 = GoalEntry(context: context)
         e3.goalText = "Goal C"
-        e3.embedding = dataC
+        e3.embedding = Data([0x10, 0x20, 0x30]) // Dummy embedding for C (dissimilar to A)
         
         try context.save()
+        
+        // Assume dataA is the embedding for "Goal A"
+        let dataA = Data([0x01, 0x02, 0x03])
         
         // Search similar to A (using A's embedding)
         // Should return B first, then C (or C might be 0 similarity)
@@ -288,5 +279,33 @@ final class GoalDataAggregatorTests: XCTestCase {
         XCTAssertFalse(results.isEmpty)
         XCTAssertEqual(results.first?.goalText, "Goal B")
         XCTAssertGreaterThan(results.first?.similarity ?? 0, 0.8)
+    }
+
+    func test_averageConfidence_ignoresUnanalyzed() async throws {
+        // 1. Analyzed Entry (High Confidence)
+        let e1 = GoalEntry(context: context)
+        e1.dateString = GoalEntry.dateStringFrom(Date())
+        e1.analyzedAt = Date()
+        e1.categoryConfidence = 0.9
+        e1.sentimentScore = 0.9
+        e1.category = "Work"
+        e1.sentiment = "Positive"
+        
+        // 2. Unanalyzed Entry (Zero/Nil Confidence)
+        let e2 = GoalEntry(context: context)
+        e2.dateString = GoalEntry.dateStringFrom(Date())
+        e2.analyzedAt = nil
+        e2.categoryConfidence = 0.0
+        e2.sentimentScore = 0.0
+        e2.category = nil
+        e2.sentiment = nil
+        
+        try context.save()
+        
+        let stats = try await aggregator.getAggregatedStats(for: .day)
+        
+        // Should be 0.9 (Average of 1 item), NOT 0.45 (Average of 2 items)
+        XCTAssertEqual(stats.averageConfidence.topic, 0.9, accuracy: 0.01, "Should ignore unanalyzed entry for topic confidence")
+        XCTAssertEqual(stats.averageConfidence.sentiment, 0.9, accuracy: 0.01, "Should ignore unanalyzed entry for sentiment confidence")
     }
 }

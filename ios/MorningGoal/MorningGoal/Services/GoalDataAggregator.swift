@@ -610,18 +610,22 @@ final class GoalDataAggregator {
 
     /// 计算平均置信度
     private func calculateAverageConfidence(entries: [GoalEntry]) -> DimensionConfidence {
-        guard !entries.isEmpty else {
+        // 仅计算已分析的条目
+        let analyzedEntries = entries.filter { $0.analyzedAt != nil }
+
+        guard !analyzedEntries.isEmpty else {
             return DimensionConfidence(topic: 0, sentiment: 0, urgency: 0, timeFrame: 0, actionType: 0, difficulty: 0, specificity: 0)
         }
 
-        let count = Double(entries.count)
-        let topic = entries.reduce(0.0) { $0 + $1.categoryConfidence } / count
-        let sentiment = entries.reduce(0.0) { $0 + $1.sentimentScore } / count
-        let urgency = entries.reduce(0.0) { $0 + $1.urgencyConfidence } / count
-        let timeFrame = entries.reduce(0.0) { $0 + $1.timeFrameConfidence } / count
-        let actionType = entries.reduce(0.0) { $0 + $1.actionTypeConfidence } / count
-        let difficulty = entries.reduce(0.0) { $0 + $1.difficultyConfidence } / count
-        let specificity = entries.reduce(0.0) { $0 + $1.specificityConfidence } / count
+        let count = Double(analyzedEntries.count)
+        let topic = analyzedEntries.reduce(0.0) { $0 + $1.categoryConfidence } / count
+        let sentiment = analyzedEntries
+            .reduce(0.0) { $0 + abs($1.sentimentScore) } / count // Use absolute value for sentiment if it's polarity, or just score if confidence
+        let urgency = analyzedEntries.reduce(0.0) { $0 + $1.urgencyConfidence } / count
+        let timeFrame = analyzedEntries.reduce(0.0) { $0 + $1.timeFrameConfidence } / count
+        let actionType = analyzedEntries.reduce(0.0) { $0 + $1.actionTypeConfidence } / count
+        let difficulty = analyzedEntries.reduce(0.0) { $0 + $1.difficultyConfidence } / count
+        let specificity = analyzedEntries.reduce(0.0) { $0 + $1.specificityConfidence } / count
 
         return DimensionConfidence(
             topic: topic,
