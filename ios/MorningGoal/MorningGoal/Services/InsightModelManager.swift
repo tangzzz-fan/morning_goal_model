@@ -199,6 +199,9 @@ final class InsightModelManager: ObservableObject {
     func loadModels() async {
         statusMessage = "正在加载 Tokenizer..."
 
+        // 清空已加载的分类器列表，防止重复加载时累积
+        loadedClassifiers.removeAll()
+
         do {
             // 1. 加载 Tokenizer (从 HuggingFace)
             tokenizer = try await AutoTokenizer.from(pretrained: "bert-base-chinese")
@@ -213,7 +216,10 @@ final class InsightModelManager: ObservableObject {
             for config in Self.classifierConfigs {
                 do {
                     try loadClassifier(config: config)
-                    loadedClassifiers.append(config.name)
+                    // 避免重复添加
+                    if !loadedClassifiers.contains(config.name) {
+                        loadedClassifiers.append(config.name)
+                    }
                 } catch {
                     logger.warning("Failed to load \(config.name): \(error.localizedDescription)")
                 }
