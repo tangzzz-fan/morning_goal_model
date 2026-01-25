@@ -37,7 +37,8 @@ final class InsightEngineTests: XCTestCase {
         goalText: String = "测试目标",
         category: String? = nil,
         sentiment: String? = nil,
-        sentimentScore: Double = 0.0
+        sentimentScore: Double = 0.0,
+        actionType: String? = nil
     ) -> GoalEntry {
         let entry = GoalEntry(context: context)
         entry.dateString = dateString
@@ -46,6 +47,7 @@ final class InsightEngineTests: XCTestCase {
         entry.category = category
         entry.sentiment = sentiment
         entry.sentimentScore = sentimentScore
+        entry.actionType = actionType
         return entry
     }
 
@@ -113,9 +115,9 @@ final class InsightEngineTests: XCTestCase {
     // MARK: - 测试：平衡建议分析
 
     func test_analyzeBalance_detectsImbalance() {
-        // 创建 10 条数据，全是健康类型（100%）
+        // 创建 10 条数据，全是工作类型（100%）
         for i in 0 ..< 10 {
-            _ = createEntry(dateString: dateString(daysAgo: i), category: "健康")
+            _ = createEntry(dateString: dateString(daysAgo: i), actionType: "工作")
         }
         try? context.save()
 
@@ -124,9 +126,11 @@ final class InsightEngineTests: XCTestCase {
         let balanceInsight = insights.first { $0.id == "balance" }
         XCTAssertNotNil(balanceInsight, "应生成平衡建议洞察")
 
-        if case let .balance(mainType, percentage, _) = balanceInsight {
-            XCTAssertEqual(mainType, "健康")
+        if case let .balance(mainType, percentage, suggestedType) = balanceInsight {
+            XCTAssertEqual(mainType, "工作")
             XCTAssertGreaterThanOrEqual(percentage, 60)
+            // 根据新的逻辑，工作 -> 生活
+            XCTAssertEqual(suggestedType, "生活")
         }
     }
 

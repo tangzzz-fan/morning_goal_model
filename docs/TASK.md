@@ -119,20 +119,20 @@
 - [x] 使用 BackgroundTasks API 实现定时聚合
 - [x] 每日计算日统计
 - [x] 每周计算周统计
+- [x] 30分钟 AppRefresh 任务 (预生成洞察)
 
 ---
 
 ## Phase 5: 洞察生成引擎 ✅
 
 ### 5.1 洞察类型定义
-
 - [x] 扩展 `Insight` 枚举，覆盖 balance / volumeTrend / weekdayPattern / encouragement / comparison / recurringGoal / achievability
 
 ### 5.2 分析器实现 (已集成在 InsightEngine)
 
 - [x] `analyzeWeekdayPattern(entries:)` - 识别周期性模式
 - [x] `findRecurringGoals(entries:)` - 识别高频目标
-- [x] `analyzeBalance(entries:)` - 目标类型平衡建议
+- [x] `analyzeBalance(entries:)` - 目标类型平衡建议 (基于 ActionType)
 - [x] `analyzeSentimentTrend(entries:)` - 情感趋势
 - [x] `analyzeVolumeTrend(entries:)` - 目标数量趋势
 - [x] `analyzeAchievability(entries:)` - 可达成性评估
@@ -189,14 +189,14 @@
 
 ### 7.1 单元测试
 
-- [ ] GoalDataAggregator 测试
+- [x] GoalDataAggregator 测试
 - [x] InsightEngineTests
-- [ ] Balance/Trend/Achievability 相关测试
+- [x] Balance/Trend/Achievability 相关测试 (包含在 InsightEngineTests)
 
 ### 7.2 集成测试
 
 - [ ] 端到端分类流程测试
-- [ ] 洞察生成流程测试
+- [x] 洞察生成流程测试 (InsightSystemIntegrationTests)
 - [ ] 数据持久化测试
 
 ### 7.3 性能测试

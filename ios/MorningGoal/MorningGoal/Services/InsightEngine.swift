@@ -278,38 +278,37 @@ class InsightEngine {
 
     // MARK: - 新增分析方法 (Phase 5.2)
 
-    /// 分析目标类型平衡度
+    /// 分析目标类型平衡度 (基于 ActionType)
     private func analyzeBalance(_ entries: [GoalEntry]) -> Insight? {
         guard entries.count >= 10 else { return nil }
 
-        // 统计主题分布
-        let categoryGroups = Dictionary(grouping: entries) {
-            $0.effectiveCategory ?? "未分类"
+        // 统计行动类型分布
+        let actionTypeGroups = Dictionary(grouping: entries) {
+            $0.effectiveActionType ?? "未分类"
         }
 
-        guard let topCategory = categoryGroups.max(by: { $0.value.count < $1.value.count }) else {
+        guard let topType = actionTypeGroups.max(by: { $0.value.count < $1.value.count }) else {
             return nil
         }
 
-        let percentage = Int(Double(topCategory.value.count) / Double(entries.count) * 100)
+        let percentage = Int(Double(topType.value.count) / Double(entries.count) * 100)
 
         // 只有当占比超过 60% 时才建议平衡
         guard percentage >= 60 else { return nil }
 
-        // 建议互补类型
+        // 建议互补类型 (基于 ActionType)
         let complementaryTypes: [String: String] = [
-            "健康": "学习",
-            "学习": "社交",
-            "工作": "健康",
-            "社交": "工作",
-            "财务": "健康",
-            "创意": "健康",
-            "默认": "健康"
+            "工作": "生活", // Work -> Lifestyle
+            "学习": "社交", // Learning -> Social
+            "运动": "学习", // Exercise -> Learning
+            "生活": "工作", // Lifestyle -> Work
+            "社交": "运动", // Social -> Exercise
+            "未分类": "生活"
         ]
 
-        let suggestedType = complementaryTypes[topCategory.key] ?? "其他"
+        let suggestedType = complementaryTypes[topType.key] ?? "其他"
 
-        return .balance(mainType: topCategory.key, percentage: percentage, suggestedType: suggestedType)
+        return .balance(mainType: topType.key, percentage: percentage, suggestedType: suggestedType)
     }
 
     /// 分析周期模式（周几最活跃）

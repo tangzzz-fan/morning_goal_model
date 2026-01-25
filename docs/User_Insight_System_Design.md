@@ -13,6 +13,7 @@
 9. [端侧实现方案](#9-端侧实现方案)
 10. [训练与部署流程](#10-训练与部署流程)
 11. [实施路线图](#11-实施路线图)
+12. [验证与模拟指南](#12-验证与模拟指南)
 
 ---
 
@@ -464,7 +465,21 @@ class GoalDataAggregator {
 }
 ```
 
-### 6.3 数据聚合周期
+### 6.3 数据聚合周期 (已实现)
+
+我们使用 `BackgroundTasks` 框架实现了自动化的数据聚合。
+
+#### 6.3.1 调度策略 (`AggregationScheduler`)
+
+- **Refresh Task** (`com.morninggoal.refresh_stats`):
+  - 频率: 每 30 分钟尝试一次
+  - 行为: 聚合当日数据，预生成高优先级洞察，确保用户打开 App 时数据即时可用。
+- **Daily Processing** (`com.morninggoal.dailyAggregation`):
+  - 频率: 每日凌晨 2:00
+  - 行为: 计算并归档昨日的完整统计数据 (`DailyStats`)。
+- **Weekly Processing** (`com.morninggoal.weeklyAggregation`):
+  - 频率: 每周一凌晨 3:00
+  - 行为: 计算上周的完整统计数据。
 
 ```mermaid
 graph LR
@@ -472,22 +487,18 @@ graph LR
         A[每次输入] --> B[分类 & 存储]
     end
     
-    subgraph "每日"
-        C[每日凌晨] --> D[计算日统计]
+    subgraph "后台刷新 (30min)"
+        C[App Refresh] --> D[聚合今日数据]
+        D --> E[预生成洞察]
     end
     
-    subgraph "每周"
-        E[每周日] --> F[计算周统计]
+    subgraph "每日/周归档"
+        F[Processing Task] --> G[计算历史统计]
     end
     
-    subgraph "每月"
-        G[每月1日] --> H[计算月统计]
-    end
-    
-    B --> I[goal_records]
-    D --> J[aggregated_stats]
-    F --> J
-    H --> J
+    B --> H[goal_records]
+    D --> I[缓存/State]
+    G --> J[aggregated_stats]
 ```
 
 ---
@@ -1951,6 +1962,80 @@ gantt
 | 端侧更新收敛速度 | < 10 epochs |
 
 ---
+
+## 12. 验证与模拟指南
+
+本节描述如何验证洞察系统的完整流程，包括从数据库获取数据、调用分析服务到生成洞察。
+
+### 12.1 端到端流程模拟
+
+为了验证系统能否正确从数据库获取数据并生成洞察，可以使用以下流程：
+
+1.  **数据准备**:
+    - 在 Core Data (`GoalEntry`) 中创建一系列模拟数据。
+    - 确保数据包含 `category`, `sentiment` 等基础属性，以及 `actionType`, `urgency` 等新维度属性。
+    - 时间分布需覆盖目标周期（如过去 7 天）。
+
+2.  **数据聚合**:
+    - 调用 `GoalDataAggregator.getAggregatedStats(for: .week)`。
+    - 验证返回的 `AggregatedStats` 是否包含正确的分布数据。
+
+3.  **洞察生成**:
+    - 初始化 `InsightEngine`。
+    - 调用 `generateInsights(for: 7)`。
+    - 检查返回的 `[Insight]` 数组是否包含预期的洞察类型（如 `balance`, `trend` 等）。
+
+#### 代码示例 (Swift Simuation)
+
+```swift
+func simulateInsightGeneration() async throws {
+    let context = DataController.shared.container.viewContext
+    let aggregator = GoalDataAggregator(viewContext: context)
+    let engine = InsightEngine(context: context)
+    
+    // 1. 创建模拟数据 (模拟过去一周的高强度工作)
+    for i in 0..<10 {
+        let entry = GoalEntry(context: context)
+        entry.dateString = GoalEntry.todayString()
+        entry.text = "完成项目报告 \(i)"
+        entry.category = "工作"
+        entry.actionType = "工作" // ActionType
+        entry.sentiment = "焦虑"
+    }
+    try context.save()
+    
+    // 2. 执行聚合
+    let stats = aggregator.getAggregatedStats(for: .week)
+    print("本周目标总数: \(stats.totalGoals)")
+    
+    // 3. 生成洞察
+    let insights = engine.generateInsights(for: 7)
+    
+    for insight in insights {
+        print("💡 [\(insight.title)] \(insight.description)")
+        if let suggestion = insight.actionSuggestion {
+            print("   建议: \(suggestion)")
+        }
+    }
+}
+```
+
+### 12.2 后台任务模拟
+
+由于后台任务由 iOS 系统控制，开发调试时需要手动触发：
+
+1.  在真机或模拟器运行 App。
+2.  App 进入后台。
+3.  在 Xcode 点击 **Pause program execution**。
+4.  在 Console 输入以下命令触发刷新任务：
+    ```lldb
+    e -l objc -- (void)[[BGTaskScheduler sharedScheduler] _simulateLaunchForTaskWithIdentifier:@"com.morninggoal.refresh_stats"]
+    ```
+5.  点击 **Resume program execution**。
+6.  观察 Console 日志，应显示 "App Refresh Completed"。
+
+---
+
 
 ## 附录
 

@@ -14,7 +14,12 @@ struct MorningGoalApp: App {
     @Environment(\.scenePhase) private var scenePhase
     @State private var showLaunchScreen = true
 
-    init() { Analytics.shared = NoopAnalytics() }
+    init() {
+        Analytics.shared = NoopAnalytics()
+        // 注册后台任务
+        AggregationScheduler.shared.register()
+    }
+
     #if DEBUG
     private func _debugValidateTimeWindow(context: NSManagedObjectContext) {
         let settings = UserSettings.fetchOrCreate(in: context)

@@ -217,4 +217,76 @@ final class GoalDataAggregatorTests: XCTestCase {
         let highSpec = specificityDist.first { $0.label == "High" }
         XCTAssertEqual(highSpec?.count, 2)
     }
+
+    func test_getCompletionRate_returnsCorrectRate() async throws {
+        // 3 entries, 2 analyzed (simulated completion)
+        let e1 = GoalEntry(context: context)
+        e1.dateString = GoalEntry.dateStringFrom(Date())
+        e1.analyzedAt = Date() // Completed
+        e1.category = "Work"
+        
+        let e2 = GoalEntry(context: context)
+        e2.dateString = GoalEntry.dateStringFrom(Date())
+        e2.analyzedAt = Date() // Completed
+        e2.category = "Work"
+        
+        let e3 = GoalEntry(context: context)
+        e3.dateString = GoalEntry.dateStringFrom(Date())
+        e3.analyzedAt = nil // Not completed
+        e3.category = "Health"
+        
+        try context.save()
+        
+        let rateResult = try await aggregator.getCompletionRate(groupBy: .topic, period: .day)
+        
+        // Overall rate: 2/3 = 66.6%
+        XCTAssertEqual(rateResult.overallRate, 66.6, accuracy: 0.1)
+        
+        // Work rate: 2/2 = 100%
+        let workItem = rateResult.items.first { $0.label == "Work" }
+        XCTAssertEqual(workItem?.rate, 100.0)
+        
+        // Health rate: 0/1 = 0%
+        let healthItem = rateResult.items.first { $0.label == "Health" }
+        XCTAssertEqual(healthItem?.rate, 0.0)
+    }
+    
+    func test_getSimilarGoals_returnsCorrectMatches() async throws {
+        // Creating embeddings
+        // Vector A: [1, 0, 0]
+        let vectorA: [Float] = [1.0, 0.0, 0.0]
+        let dataA = Data(buffer: UnsafeBufferPointer(start: vectorA, count: vectorA.count))
+        
+        // Vector B: [0.9, 0.1, 0] (Similar to A)
+        let vectorB: [Float] = [0.9, 0.1, 0.0]
+        let dataB = Data(buffer: UnsafeBufferPointer(start: vectorB, count: vectorB.count))
+        
+        // Vector C: [0, 1, 0] (Different from A)
+        let vectorC: [Float] = [0.0, 1.0, 0.0]
+        let dataC = Data(buffer: UnsafeBufferPointer(start: vectorC, count: vectorC.count))
+        
+        let e1 = GoalEntry(context: context)
+        e1.goalText = "Goal A"
+        e1.embedding = dataA
+        
+        let e2 = GoalEntry(context: context)
+        e2.goalText = "Goal B"
+        e2.embedding = dataB
+        
+        let e3 = GoalEntry(context: context)
+        e3.goalText = "Goal C"
+        e3.embedding = dataC
+        
+        try context.save()
+        
+        // Search similar to A (using A's embedding)
+        // Should return B first, then C (or C might be 0 similarity)
+        // Exclude A itself from results
+        
+        let results = try await aggregator.getSimilarGoals(embedding: dataA, limit: 10, excludeObjectID: e1.objectID)
+        
+        XCTAssertFalse(results.isEmpty)
+        XCTAssertEqual(results.first?.goalText, "Goal B")
+        XCTAssertGreaterThan(results.first?.similarity ?? 0, 0.8)
+    }
 }
