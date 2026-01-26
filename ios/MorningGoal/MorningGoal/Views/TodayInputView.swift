@@ -13,7 +13,7 @@ struct TodayInputView: View {
     @State private var titleText: String = ""
 
     // 洞察模型管理器
-    @StateObject private var modelManager = InsightModelManagerWrapper()
+    @State private var modelManager = InsightModelManagerWrapper()
 
     // Completion callback for dismissal
     let onComplete: () -> Void
@@ -91,63 +91,76 @@ struct TodayInputView: View {
     private func analyzeGoalEntry(_ entry: GoalEntry) async {
         do {
             let result = try await modelManager.analyze(text: entry.goalText)
-
-            await MainActor.run {
-                // 更新 Topic (主题)
-                if let topic = result.topic {
-                    entry.category = topic.label
-                    entry.categoryConfidence = topic.confidence
-                }
-
-                // 更新 Sentiment (情感)
-                if let sentiment = result.sentiment {
-                    entry.sentiment = sentiment.label
-                    entry.sentimentScore = sentiment.confidence
-                }
-
-                // 更新 Urgency (紧急度)
-                if let urgency = result.urgency {
-                    entry.urgency = urgency.label
-                    entry.urgencyConfidence = urgency.confidence
-                }
-
-                // 更新 TimeFrame (时间范围)
-                if let timeFrame = result.timeFrame {
-                    entry.timeFrame = timeFrame.label
-                    entry.timeFrameConfidence = timeFrame.confidence
-                }
-
-                // 更新 ActionType (行动类型)
-                if let actionType = result.actionType {
-                    entry.actionType = actionType.label
-                    entry.actionTypeConfidence = actionType.confidence
-                }
-
-                // 更新 Difficulty (难度)
-                if let difficulty = result.difficulty {
-                    entry.difficulty = difficulty.label
-                    entry.difficultyConfidence = difficulty.confidence
-                }
-
-                // 更新 Specificity (具体程度)
-                if let specificity = result.specificity {
-                    entry.specificity = specificity.label
-                    entry.specificityConfidence = specificity.confidence
-                }
-
-                // 记录分析时间
-                entry.analyzedAt = Date()
-
-                // 保存更新
-                do {
-                    try context.save()
-                    print("✅ 目标分析完成并保存: \(entry.goalText.prefix(20))...")
-                } catch {
-                    print("❌ 保存分析结果失败: \(error)")
-                }
-            }
+            await updateEntryWithAnalysis(entry, result: result)
         } catch {
             print("❌ 目标分析失败: \(error)")
+        }
+    }
+
+    @MainActor
+    private func updateEntryWithAnalysis(_ entry: GoalEntry, result: InsightAnalysisResult) async {
+        // 更新 Topic (主题)
+        if let topic = result.topic {
+            entry.category = topic.label
+            entry.categoryConfidence = topic.confidence
+        }
+
+        // 更新 Sentiment (情感)
+        if let sentiment = result.sentiment {
+            entry.sentiment = sentiment.label
+            entry.sentimentScore = sentiment.confidence
+        }
+
+        // 更新 Urgency (紧急度)
+        if let urgency = result.urgency {
+            entry.urgency = urgency.label
+            entry.urgencyConfidence = urgency.confidence
+        }
+
+        // 更新 TimeFrame (时间范围)
+        if let timeFrame = result.timeFrame {
+            entry.timeFrame = timeFrame.label
+            entry.timeFrameConfidence = timeFrame.confidence
+        }
+
+        // 更新 ActionType (行动类型)
+        if let actionType = result.actionType {
+            entry.actionType = actionType.label
+            entry.actionTypeConfidence = actionType.confidence
+        }
+
+        // 更新 Difficulty (难度)
+        if let difficulty = result.difficulty {
+            entry.difficulty = difficulty.label
+            entry.difficultyConfidence = difficulty.confidence
+        }
+
+        // 更新 Specificity (具体程度)
+        if let specificity = result.specificity {
+            entry.specificity = specificity.label
+            entry.specificityConfidence = specificity.confidence
+        }
+
+        // 记录分析时间
+        entry.analyzedAt = Date()
+
+        // 保存更新
+        do {
+            try context.save()
+            print("✅ 目标分析完成并保存: \(entry.goalText.prefix(20))...")
+
+            // 2. 生成每日洞察 (The Whisper)
+            // 此处调用 InsightEngine，基于刚刚分析的结果生成洞察
+            let engine = InsightEngine(viewContext: context)
+            if let insight = await engine.generateDailyInsight(for: entry) {
+                entry.insightText = insight.description
+                entry.insightShownAt = Date()
+                try context.save()
+                print("✨ 洞察生成: \(insight.title) - \(insight.description)")
+            }
+
+        } catch {
+            print("❌ 保存分析结果或洞察失败: \(error)")
         }
     }
 
@@ -312,6 +325,11 @@ struct TodayInputView: View {
         .onAppear {
             load()
             randomizeTitleText()
+
+            // 加载洞察模型
+            Task {
+                await modelManager.loadModels()
+            }
 
             // 延迟键盘聚焦，等待启动屏幕动画完成
             // 启动屏幕显示时间(1.5s) + 淡出动画(0.5s) + 缓冲(0.1s) = 2.1s

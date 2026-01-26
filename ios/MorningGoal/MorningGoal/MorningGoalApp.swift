@@ -11,6 +11,7 @@ import SwiftUI
 @main
 struct MorningGoalApp: App {
     let dataController = DataController.shared
+    @State private var modelManager = InsightModelManagerWrapper()
     @Environment(\.scenePhase) private var scenePhase
     @State private var showLaunchScreen = true
 
@@ -44,6 +45,7 @@ struct MorningGoalApp: App {
             ZStack {
                 ContentView()
                     .environment(\.managedObjectContext, dataController.container.viewContext)
+                    .environment(modelManager)
 
                 // 启动屏幕覆盖层
                 if showLaunchScreen {

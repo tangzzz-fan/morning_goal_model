@@ -45,9 +45,13 @@ final class GoalEntry: NSManagedObject, Identifiable {
     @NSManaged var difficulty: String?
     @NSManaged var difficultyConfidence: Double
 
-    // Specificity (具体程度) - 新增
     @NSManaged var specificity: String?
     @NSManaged var specificityConfidence: Double
+
+    // MARK: - 洞察展示字段
+
+    @NSManaged var insightText: String?
+    @NSManaged var insightShownAt: Date?
 
     // 分析时间
     @NSManaged var analyzedAt: Date?

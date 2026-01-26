@@ -9,6 +9,7 @@
 import Combine
 import CoreML
 import Foundation
+import Observation
 import OSLog
 import Tokenizers
 
@@ -63,34 +64,35 @@ struct ClassifierConfig {
 /// 洞察模型管理器 - 管理 BertFeatureExtractor + 7 个分类器
 /// 使用 swift-transformers 的 Tokenizers 框架
 @MainActor
-final class InsightModelManager: ObservableObject {
+@Observable
+final class InsightModelManager {
     // MARK: - Properties
 
     private let logger = Logger(subsystem: "com.morninggoal.app", category: "insight-model")
 
     /// 共享特征提取器 (静态)
-    private var featureExtractor: MLModel?
+    @ObservationIgnored private var featureExtractor: MLModel?
 
     /// 分类器字典
-    private var classifiers: [String: MLModel] = [:]
+    @ObservationIgnored private var classifiers: [String: MLModel] = [:]
 
     /// Tokenizer (使用 swift-transformers)
-    private var tokenizer: Tokenizer?
-    private let maxLength: Int = 128
+    @ObservationIgnored private var tokenizer: Tokenizer?
+    @ObservationIgnored private let maxLength: Int = 128
 
     // Special token IDs (standard BERT)
-    private let padTokenId: Int = 0
-    private let clsTokenId: Int = 101
-    private let sepTokenId: Int = 102
+    @ObservationIgnored private let padTokenId: Int = 0
+    @ObservationIgnored private let clsTokenId: Int = 101
+    @ObservationIgnored private let sepTokenId: Int = 102
 
     /// 是否已初始化
-    @Published var isInitialized: Bool = false
+    var isInitialized: Bool = false
 
     /// 加载状态消息
-    @Published var statusMessage: String = "正在初始化..."
+    var statusMessage: String = "正在初始化..."
 
     /// 已加载的分类器名称
-    @Published var loadedClassifiers: [String] = []
+    var loadedClassifiers: [String] = []
 
     // MARK: - Label Mappings (与训练数据索引一致)
 
@@ -637,16 +639,36 @@ final class InsightModelManager: ObservableObject {
 
 /// 安全的 InsightModelManager 包装器
 @MainActor
-final class InsightModelManagerWrapper: ObservableObject {
-    private var manager: InsightModelManager?
+@Observable
+final class InsightModelManagerWrapper {
+    @ObservationIgnored private var manager: InsightModelManager?
 
-    @Published var isInitialized: Bool = false
-    @Published var statusMessage: String = "正在初始化..."
-    @Published var loadedClassifiers: [String] = []
-    @Published var initError: String?
+    // Serial processing queue
+    @ObservationIgnored private var processingQueue: Task<Void, Never>?
+
+    var isInitialized: Bool = false
+    var statusMessage: String = "正在初始化..."
+    var loadedClassifiers: [String] = []
+    var initError: String?
 
     init() {
         manager = InsightModelManager()
+    }
+
+    /// Execute a task serially in the queue
+    func performSerially<T>(_ operation: @escaping () async throws -> T) async throws -> T {
+        // Create a new task that waits for the previous one
+        let newJob = Task { [previousJob = processingQueue] in
+            _ = await previousJob?.result
+            return try await operation()
+        }
+
+        // Update the queue pointer (ignoring errors from previous tasks)
+        processingQueue = Task {
+            _ = await newJob.result
+        }
+
+        return try await newJob.value
     }
 
     func loadModels() async {

@@ -11,6 +11,7 @@ extension Color {
         static let accentPink = Color(hex: "FF6B6B") // 强调色 - 粉红
         static let accentCyan = Color(hex: "4ECDC4") // 强调色 - 青色
         static let cardBackground = Color(hex: "252A48") // 卡片背景
+        static let inputBackground = Color(hex: "1F2440") // 输入框背景
     }
 
     init(hex: String) {

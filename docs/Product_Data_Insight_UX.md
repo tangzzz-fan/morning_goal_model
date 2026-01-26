@@ -1,114 +1,128 @@
-# Product Definition: Data Insight UX Strategy
-**"Invisible Intelligence" for the Minimalist Morning**
+# 产品定义：数据洞察 UX 策略
+**“极简早晨的隐形智能”**
 
-> **Core Philosophy**:  
-> The system should become *smarter*, not *louder*.  
-> Insights must be "Don't Make Me Think" moments—glanceable, non-intrusive, and appearing *only* when they add value.  
-> We reject the "Dashboard" paradigm. We adopt the "Whisper" paradigm.
-
----
-
-## 1. Design Principles (The "How")
-
-1.  **Zero-blocker Input**: The "Morning Goal" < 15s rule is sacred. Insights must *never* interrupt the flow of writing the goal.
-    *   *Decision*: No real-time analysis interference. No "Suggester" popup while typing.
-2.  **Post-Action Reward**: Insights are the "reward" for the habit loop, appearing *immediately after* the "Commit" action.
-    *   *Metaphor*: "Fortune Cookie" or "Daily Horoscope" — A small piece of wisdom unlocked by your action.
-3.  **Contextual Integration**: Insights live *in the stream*, not on a separate page.
-4.  **One Thing at a Time**: Never overwhelm. Show *one* dominant insight per day.
+> **核心理念**：
+> 系统应该变得*更聪明*，而不是*更吵闹*。
+> 洞察必须是“不要让我思考”的时刻——一目了然、非侵入式，并且*仅在*增加价值时出现。
+> 我们拒绝“仪表盘”范式。我们采用“耳语”范式。
 
 ---
 
-## 2. Interaction Flows
+## 1. 设计原则（“如何做”）
 
-### Flow A: The Daily Input (Standard Morning)
-
-1.  **User Opens App**: Clean input field (as is).
-2.  **User Types Goal**: "Finishing the Q3 Report."
-3.  **User Long-presses to Commit**: The satisfaction animation plays.
-4.  **Transition**: The goal moves to the "History" list (or stays as "Today's Card").
-5.  **The "Whisper" (New)**: 
-    *   Immediately below Today's Goal card, a small, elegant **Insight Pill** or **Insight Card** fades in.
-    *   *Example*: "Keep it up! 🎯 This is your 3rd Work goal this week. You're on a roll."
-    *   *Action*: User glances, smiles (or ignores), and closes app. 
-    *   *Friction Added*: 0 seconds.
-
-### Flow B: "History on this Day" (Nostalgia)
-
-*   **Trigger**: User opens app, and it is a significant date (e.g., 1 year since first use, or exact date match).
-*   **Presentation**: 
-    *   *Before Input*: A translucent card floats above the input: "On this day last year, you focused on 'Learning Swift'. What's today's focus?"
-    *   *Why Before?*: To inspire today's goal (priming).
-    *   *Dispensability*: Tap anywhere to dismiss instantly.
-
-### Flow C: The Weekly Review (Passive)
-
-*   **Trigger**: Sunday Morning (or user's preferred "Review Day").
-*   **Presentation**: 
-    *   Upon committing Sunday's goal, the "Reward" is a slightly larger card: **"Weekly Briefing"**.
-    *   Shows: Topic distribution visual (minimalist bar/pie) + One text summary.
-    *   *Text*: "You balanced Work (3) and Health (2) well this week."
+1.  **零阻碍输入**：“早晨目标” < 15秒的规则是神圣的。洞察绝不能*打断*写目标的流程。
+    *   *决策*：没有实时分析干扰。输入时没有“建议者”弹窗。
+2.  **行动后奖励**：洞察是习惯回路的“奖励”，*紧随*“承诺”行动之后出现。
+    *   *隐喻*：“幸运饼干”或“每日星座运势”——由你的行动解锁的一小片智慧。
+3.  **情境融合**：洞察生活在*流*中，而不是在一个单独的页面上。
+4.  **一次一件事**：绝不压倒用户。每天展示*一个*主导洞察。
 
 ---
 
-## 3. Insight Logic & Presentation Levels
+## 2. 交互流程
 
-We categorize insights by **Intrusiveness** and **Priority**.
+### 流程 A：每日输入（标准早晨）
 
-### Level 1: Ambient (Micro-Feedback)
-*   *Where*: Small icon or color tint on the Goal Card history.
-*   *Content*: Topic Icon (Briefcase for Work, Heart for Health) + Sentiment color (Subtle warm/cool glow).
-*   *Goal*: User scrolls history and *feels* the pattern without reading text.
+1.  **用户打开应用**：干净的输入框（保持现状）。
+2.  **用户输入目标**：“完成 Q3 报告。”
+3.  **用户长按承诺**：满足感动画播放。
+4.  **过渡**：目标移动到“历史”列表（或作为“今日卡片”停留）。
+5.  **“耳语”（新）**：
+    *   在今日目标卡片下方，立即淡入一个优雅的小型 **洞察胶囊** 或 **洞察卡片**。
+    *   *示例*：“继续保持！🎯 这是你本周的第3个工作目标。状态不错。”
+    *   *动作*：用户瞥一眼，微笑（或忽略），然后关闭应用。
+    *   *增加的摩擦*：0秒。
 
-### Level 2: The "Whisper" (Daily Post-Commit)
-*   *Where*: Single line text appearing under today's committed goal.
-*   *Content Source*: **PatternAnalyzer** or **TrendAnalyzer**.
-*   *Examples*:
-    *   *Pattern*: "Monday is usually your 'Deep Work' day."
-    *   *Trend*: "You've been consistently Positive for 5 days!"
-    *   *Detail*: "This goal is highly specific. Great job." (SpecificityClassifier)
+### 流程 B：“历史上的今天”（怀旧）
 
-### Level 3: The "Spotlight" (High Priority / Rare)
-*   *Where*: A dedicated card that inserts itself into the top of the History Stream.
-*   *Content Source*: **BalanceAdvisor** or "Milestones".
-*   *Examples*:
-    *   *Balance Warning*: "⚠️ 80% Work goals lately. Don't forget to rest."
-    *   *Milestone*: "🏅 100th Goal Recorded!"
-    *   *Nostalgia*: "📅 One year ago today..."
+*   **触发**：用户打开应用，且是一个重要日期（例如，首次使用满1年，或日期完全匹配）。
+*   **呈现**：
+    *   *输入前*：一个半透明卡片漂浮在输入框上方：“去年的今天，你专注于‘学习 Swift’。今天的重点是什么？”
+    *   *为什么在之前？*：为了激发今天的目标（启动效应）。
+    *   *可有可无*：点击任意位置立即解散。
+
+### 流程 C：每周回顾（被动）
+
+*   **触发**：周日早晨（或用户偏好的“回顾日”）。
+*   **呈现**：
+    *   提交周日目标后，“奖励”是一张稍大的卡片：**“每周简报”**。
+    *   显示：主题分布可视化（极简柱状/饼图）+ 一个文本摘要。
+    *   *文本*：“这周你在工作（3）和健康（2）之间平衡得很好。”
+
+### 流程 D：午后回归（目标后状态）
+
+*   **情境**：用户在*已经*设定今日目标后打开应用。
+*   **设计选择**：**渐进式披露**（点击揭示）。
+*   **问题**：PRD 要求一个干净的列表。我们不能用永久的标签/图表让历史流变得杂乱。
+*   **解决方案**：
+    *   **主视图**：保持纯净的文本列表。
+    *   **交互**：点击目标卡片将其展开（手风琴样式）或翻转。
+    *   **揭示数据（“卡片背面”）**：
+        *   **AI 标签**：`主题`、`心情`、`紧急度` 的胶囊徽章。
+        *   **上下文**：“这是你本月第5个‘编程’目标。”
+        *   **可编辑性**：允许用户在此处纠正 AI 分类（强化学习）。
+    *   *为什么*：这用深度奖励了“无聊浏览”行为，而不会用噪音给“早晨仪式”增加负担。
 
 ---
 
-## 4. UI/UX Concept: "The Insight Stack"
+## 3. 洞察逻辑与呈现层级
 
-Imagine the main interface as a vertical stack:
+我们将洞察按 **侵入性** 和 **优先级** 分类。
 
-1.  **Header**: Date / Greeting.
-2.  **Committed Goal Card**: The hero element.
-3.  **Insight Container (Dynamic)**:
-    *   *Empty* (Default state).
-    *   *The Whisper*: A slim, rounded rectangle fitting the width of the goal card. Background: 5% opacity dynamic color.
-    *   *The Card*: A full card for "Weekly Review" or "Nostalgia".
-4.  **History Stream**: The past goals fading out below.
+### 第一级：环境（微反馈）
+*   *位置*：目标卡片历史上的小图标或色调。
+*   *内容*：主题图标（工作是公文包，健康是心形）+ 情感颜色（微妙的暖/冷光）。
+*   *目标*：用户滚动历史记录并*感知*模式，而无需阅读文本。
 
-### Visual Style
-*   **Typography**: System Serif for the Goal (Personal), System Sans-serif (Rounded) for the Insight (AI/System voice).
-*   **Color**: 
-    *   Goals: High contrast black/white.
-    *   Insights: Muted, pastel colors. "Information, not navigation."
+### 第二级：“耳语”（每日提交后）
+*   *位置*：出现在今日承诺目标下的一行文字。
+*   *内容来源*：**PatternAnalyzer**（模式分析器）或 **TrendAnalyzer**（趋势分析器）。
+*   *示例*：
+    *   *模式*：“周一通常是你的‘深度工作’日。”
+    *   *趋势*：“你已经连续5天保持积极心态了！”
+    *   *细节*：“这个目标非常具体。干得好。”（具体程度分类器）
+
+### 第三级：“聚光灯”（高优先级/罕见）
+*   *位置*：一张专用卡片，插入历史流的顶部。
+*   *内容来源*：**BalanceAdvisor**（平衡顾问）或 “里程碑”。
+*   *示例*：
+    *   *平衡警告*：“⚠️ 最近80%是工作目标。别忘了休息。”
+    *   *里程碑*：“🏅 记录了第100个目标！”
+    *   *怀旧*：“📅 去年的今天……”
 
 ---
 
-## 5. Technical Mappings
+## 4. UI/UX 概念：“洞察栈”
 
-| UI Component | Data Source (Backend) | Trigger |
+想象主界面是一个垂直栈：
+
+1.  **头部**：日期 / 问候。
+2.  **承诺的目标卡片**：主角元素。
+3.  **洞察容器（动态）**：
+    *   *空*（默认状态）。
+    *   *耳语*：一个细长的圆角矩形，适应目标卡片的宽度。背景：5%不透明度的动态颜色。
+    *   *卡片*：用于“每周回顾”或“怀旧”的完整卡片。
+4.  **历史流**：下方淡出的过去目标。
+
+### 视觉风格
+*   **排版**：目标使用系统衬线体（个人化），洞察使用系统无衬线体（圆润）（AI/系统声音）。
+*   **颜色**：
+    *   目标：高对比度黑/白。
+    *   洞察：柔和的粉彩颜色。“是信息，而非导航。”
+
+---
+
+## 5. 技术映射
+
+| UI 组件 | 数据源 (后端) | 触发 |
 | :--- | :--- | :--- |
-| **Topic Icon** | `TopicClassifier` | On Commit |
-| **The Whisper** | `InsightGenerator` (Top-1 priority) | On Commit (Async calc) |
-| **Memory Card** | `CoreData` (Date Query) | On App Open (Pre-calc) |
-| **Balance Warn** | `BalanceAdvisor` | Weekly Task / On Commit |
+| **主题图标** | `TopicClassifier` | 提交时 |
+| **耳语** | `InsightGenerator` (Top-1 优先级) | 提交时 (异步计算) |
+| **记忆卡片** | `CoreData` (日期查询) | 应用打开时 (预计算) |
+| **平衡警告** | `BalanceAdvisor` | 每周任务 / 提交时 |
 
-## 6. Next Steps for Implementation
+## 6. 下一步实施
 
-1.  **Refine "InsightGenerator"**: Ensure it outputs a single "Best" insight string for the `Whisper` UI.
-2.  **Design the "Insight Pill"**: Build a SwiftUI view component that can render `InsightType` visually.
-3.  **Modify `ContentView`**: Insert the "Insight Container" into the post-commit animation sequence.
+1.  **完善 "InsightGenerator"**：确保它为 `耳语` UI 输出单一的“最佳”洞察字符串。
+2.  **设计 "Insight Pill"**：构建一个可以视觉化渲染 `InsightType` 的 SwiftUI 视图组件。
+3.  **修改 `ContentView`**：将“洞察容器”插入提交后的动画序列中。

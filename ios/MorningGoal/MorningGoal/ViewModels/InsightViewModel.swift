@@ -31,7 +31,7 @@ class InsightViewModel: ObservableObject {
 
     init(context: NSManagedObjectContext) {
         self.aggregator = GoalDataAggregator(viewContext: context)
-        self.engine = InsightEngine(context: context)
+        self.engine = InsightEngine(viewContext: context)
     }
 
     // MARK: - Public Methods

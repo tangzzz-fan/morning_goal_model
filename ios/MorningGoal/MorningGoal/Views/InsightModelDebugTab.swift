@@ -15,7 +15,7 @@ import SwiftUI
 struct InsightModelDebugTab: View {
     // MARK: - State
 
-    @StateObject private var modelManager: InsightModelManagerWrapper = .init()
+    @State private var modelManager: InsightModelManagerWrapper = .init()
     @StateObject private var updateManager = InsightUpdateManager()
 
     @State private var inputText: String = ""

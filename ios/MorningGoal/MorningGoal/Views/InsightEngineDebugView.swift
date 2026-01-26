@@ -113,10 +113,19 @@ struct InsightEngineDebugView: View {
         let entries = generateScenarioData(in: context)
         self.mockEntries = entries
 
+        try? context.save() // Ensure data is saved for Aggregator to find it
+
         // 3. 运行分析
-        let engine = InsightEngine(context: context)
-        self.insights = engine.generateInsights(from: entries, topK: 10)
+        let engine = InsightEngine(viewContext: context)
+        Task {
+            let results = await engine.generateInsights(for: 30) // Analyze last 30 days
+            await MainActor.run {
+                self.insights = results
+            }
+        }
     }
+
+    // ... (generateScenarioData and sub-methods remain same) ...
 
     private func generateScenarioData(in context: NSManagedObjectContext) -> [GoalEntry] {
         switch selectedScenario {
@@ -260,49 +269,14 @@ struct InsightEngineDebugView: View {
     // MARK: - Helpers
 
     private func insightTitle(for insight: Insight) -> String {
-        switch insight {
-        case .categoryDistribution: return "主要关注点"
-        case .streakBooster: return "习惯养成建议"
-        case .consistencyPattern: return "坚持模式"
-        case .sentimentTrend: return "情绪趋势"
-        case .balance: return "生活平衡"
-        case .volumeTrend: return "动力变化"
-        case .weekdayPattern: return "黄金时间"
-        case .encouragement: return "里程碑鼓励"
-        case .comparison: return "周对比"
-        case .recurringGoal: return "重复目标"
-        case .achievability: return "可达成性分析"
-        }
+        return insight.title
     }
 
     private func insightDescription(for insight: Insight) -> String {
-        switch insight {
-        case let .categoryDistribution(top, pct):
-            return "你 \(pct)% 的目标都集中在 \(top) 领域"
-        case let .streakBooster(cat, imp):
-            return "如果在 \(cat) 上再坚持一下，完成率可提升 \(imp)%"
-        case let .consistencyPattern(cat, days):
-            return "你已经在 \(cat) 领域连续坚持了 \(days) 天"
-        case let .sentimentTrend(dir):
-            return "最近你的情绪呈现 \(dir) 趋势"
-        case let .balance(main, pct, sugg):
-            return "\(main) 占比 \(pct)%，建议适当增加 \(sugg) 相关活动"
-        case let .volumeTrend(dir, change):
-            return "目标数量较上周 \(dir) \(change)%"
-        case let .weekdayPattern(busy, _, quiet):
-            return "\(busy) 是你最忙碌的时候，\(quiet) 相对轻松"
-        case let .encouragement(streak, msg):
-            return "连续记录 \(streak) 天！\(msg)"
-        case let .comparison(thisWeek, lastWeek, _):
-            return "本周 \(thisWeek) 个目标，上周 \(lastWeek) 个"
-        case let .recurringGoal(text, count, _):
-            return "目标 '\(text)' 重复出现了 \(count) 次"
-        case let .achievability(level, sugg):
-            return "目标整体难度 \(level)，建议 \(sugg)"
-        }
+        return insight.description
     }
 
-    private func priorityBadge(for priority: InsightPriority) -> some View {
+    private func priorityBadge(for priority: Int) -> some View {
         Text(priorityLabel(priority))
             .font(.caption2)
             .padding(.horizontal, 6)
@@ -312,19 +286,19 @@ struct InsightEngineDebugView: View {
             .cornerRadius(4)
     }
 
-    private func priorityLabel(_ priority: InsightPriority) -> String {
+    private func priorityLabel(_ priority: Int) -> String {
         switch priority {
-        case .high: return "高优先级"
-        case .medium: return "中优先级"
-        case .low: return "低优先级"
+        case 5: return "High"
+        case 3: return "Med"
+        default: return "Low"
         }
     }
 
-    private func priorityColor(_ priority: InsightPriority) -> Color {
+    private func priorityColor(_ priority: Int) -> Color {
         switch priority {
-        case .high: return Color.Design.accentPink
-        case .medium: return Color.Design.accentCyan
-        case .low: return Color.Design.mutedGray
+        case 5: return Color.Design.accentPink
+        case 3: return Color.Design.accentCyan
+        default: return Color.Design.mutedGray
         }
     }
 }

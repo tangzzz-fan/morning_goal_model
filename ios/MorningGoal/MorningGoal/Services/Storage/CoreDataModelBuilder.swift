@@ -61,6 +61,12 @@ enum CoreDataModelBuilder {
         let geSpecificity = attrString("specificity", optional: true)
         let geSpecificityConfidence = attrDouble("specificityConfidence", defaultValue: 0.0)
 
+        // MARK: - 洞察展示字段 (Insight Display) - 新增
+
+        // 用于 "Progressive Disclosure" (渐进式披露) - 记录已展示给用户的洞察文本，防止历史变化
+        let geInsightText = attrString("insightText", optional: true)
+        let geInsightShownAt = attrDate("insightShownAt", optional: true, defaultValue: nil)
+
         // 分析时间
         let geAnalyzedAt = attrDate("analyzedAt", optional: true, defaultValue: nil)
 
@@ -100,6 +106,9 @@ enum CoreDataModelBuilder {
             geDifficultyConfidence,
             geSpecificity,
             geSpecificityConfidence,
+            // 洞察展示
+            geInsightText,
+            geInsightShownAt,
             // 分析时间和Embedding
             geAnalyzedAt,
             geEmbedding,

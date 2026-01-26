@@ -186,45 +186,21 @@ enum InsightTemplateLibrary {
     }
 }
 
-// MARK: - 模板渲染扩展
+// MARK: - 优先级定义
 
-extension Insight {
-    /// 使用模板系统获取描述（可选，提供更灵活的本地化支持）
-    func renderWithTemplate() -> (title: String, description: String) {
-        switch self {
-        case let .categoryDistribution(category, percentage):
-            return InsightTemplateLibrary.categoryFocus.render(variables: [
-                .category: category,
-                .percentage: String(percentage)
-            ])
-
-        case let .balance(mainType, percentage, suggestedType):
-            return InsightTemplateLibrary.balanceSuggestion.render(variables: [
-                .category: mainType,
-                .percentage: String(percentage),
-                .suggestedType: suggestedType
-            ])
-
-        case let .encouragement(streakDays, message):
-            return InsightTemplateLibrary.streakCelebration.render(variables: [
-                .days: String(streakDays),
-                .message: message
-            ])
-
-        case let .volumeTrend(direction, changePercent):
-            if direction == "上升" {
-                return InsightTemplateLibrary.volumeIncrease.render(variables: [
-                    .percentage: String(changePercent)
-                ])
-            } else {
-                return InsightTemplateLibrary.volumeDecrease.render(variables: [
-                    .percentage: String(changePercent)
-                ])
-            }
-
-        default:
-            // 对于其他类型，使用内置的 title 和 description
-            return (title, description)
-        }
-    }
+enum InsightPriority: Int {
+    case low = 1
+    case medium = 3
+    case high = 5
 }
+
+// MARK: - 模板渲染扩展 (Temporarily disabled due to Insight struct refactor)
+
+/*
+ extension Insight {
+     /// 使用模板系统获取描述（可选，提供更灵活的本地化支持）
+     func renderWithTemplate() -> (title: String, description: String) {
+         ... (Logic to be migrated if needed)
+     }
+ }
+ */

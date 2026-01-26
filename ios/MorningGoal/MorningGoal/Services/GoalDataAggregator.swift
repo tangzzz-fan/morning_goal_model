@@ -252,10 +252,12 @@ final class GoalDataAggregator {
     // MARK: - 2. 获取主题分布 (getTopicDistribution)
 
     /// 获取主题分布
-    /// - Parameter period: 时间周期
+    /// - Parameters:
+    ///   - period: 时间周期
+    ///   - referenceDate: 参考日期（默认为当前）
     /// - Returns: 分布项数组（按数量降序排列）
-    func getTopicDistribution(period: AggregationPeriod) -> [DistributionItem] {
-        let range = getDateRange(for: period)
+    func getTopicDistribution(period: AggregationPeriod, referenceDate: Date = Date()) -> [DistributionItem] {
+        let range = getDateRange(for: period, from: referenceDate)
         return getDistribution(for: .topic, from: range.from, to: range.to)
     }
 
@@ -285,11 +287,13 @@ final class GoalDataAggregator {
     // MARK: - 3. 获取情感趋势 (getSentimentTrend)
 
     /// 获取情感趋势
-    /// - Parameter days: 天数
+    /// - Parameters:
+    ///   - days: 天数
+    ///   - referenceDate: 参考日期（默认为当前）
     /// - Returns: 情感趋势结果
-    func getSentimentTrend(days: Int) -> SentimentTrendResult {
+    func getSentimentTrend(days: Int, referenceDate: Date = Date()) -> SentimentTrendResult {
         let calendar = Calendar.current
-        let today = calendar.startOfDay(for: Date())
+        let today = calendar.startOfDay(for: referenceDate)
         let startDate = calendar.date(byAdding: .day, value: -(days - 1), to: today)!
         let endDate = today.addingTimeInterval(86400)
 
