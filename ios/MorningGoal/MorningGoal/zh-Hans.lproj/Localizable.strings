@@ -96,6 +96,10 @@
 "history_empty_message" = "开始记录你的第一个目标吧！";
 "history_today" = "今天";
 "history_yesterday" = "昨天";
+"history_generating_insight" = "正在生成历史洞察...";
+"history_no_insight" = "暂无洞察";
+"history_wrong_classification" = "分类错误？";
+"history_close" = "关闭";
 
 // MARK: - Streak
 "streak_days" = "%d 天";
@@ -111,6 +115,11 @@
 "debug_clear_all" = "清除所有数据";
 "debug_cancel" = "取消";
 "debug_menu_title" = "调试选项";
+"debug_model_test_page" = "模型测试页面";
+"debug_quality_dashboard" = "模型质量仪表板";
+"debug_enhanced_dashboard" = "增强质量分析";
+"debug_model_debug_ui" = "🔮 模型调试界面";
+"debug_cloudkit_status" = "☁️ CloudKit 同步状态";
 
 // MARK: - Streak Settings
 "streak_settings_title" = "Streak 设置";
@@ -120,6 +129,9 @@
 "streak_settings_tip_message" = "此操作会清除现有数据，并创建连续%d天的模拟记录（不包括今天）";
 "streak_settings_confirm" = "确认设置";
 "streak_settings_cancel" = "取消";
+"streak_0_days" = "0天";
+"streak_90_days" = "90天";
+"streak_quick_select" = "快速选择";
 
 // MARK: - On This Day Settings
 "on_this_day_settings_title" = "历史上的今天";
@@ -127,6 +139,8 @@
 "on_this_day_settings_years" = "添加 %d 年前的今天";
 "on_this_day_settings_tip_message" = "此操作会为过去 %d 年的今天添加模拟数据\n用于测试'历史上的今天'功能";
 "on_this_day_settings_confirm" = "确认添加";
+"years_1" = "1年";
+"years_5" = "5年";
 
 // MARK: - Common
 "year" = "年";
@@ -138,3 +152,40 @@
 "save" = "保存";
 "done" = "完成";
 
+// MARK: - Navigation
+"nav_goals" = "目标";
+"nav_stats" = "统计";
+"nav_insights" = "洞察";
+
+// MARK: - Insight Stats
+"stats_title" = "洞察统计";
+"stats_period_picker" = "周期";
+"stats_loading" = "正在加载统计数据...";
+"stats_error_retry" = "重试";
+"stats_section_smart_insights" = "智能洞察";
+"stats_section_overview" = "概览";
+"stats_total_goals" = "总目标";
+"stats_analyzed" = "已分析";
+"stats_corrected" = "已纠正";
+"stats_section_topic_dist" = "主题分布";
+"stats_section_sentiment_trend" = "情感趋势";
+"stats_section_goal_trend" = "目标数量趋势";
+"stats_section_weekday_dist" = "星期分布";
+"stats_section_confidence" = "模型置信度";
+"stats_chart_date" = "日期";
+"stats_chart_sentiment" = "情感";
+"stats_chart_count" = "数量";
+"stats_sentiment_positive" = "积极";
+"stats_sentiment_negative" = "消极";
+"stats_sentiment_neutral" = "中性";
+"stats_avg_sentiment" = "平均: %.2f";
+"stats_confidence_overall" = "总体: %.0f%%";
+
+// Dimensions
+"dimension_topic" = "主题";
+"dimension_sentiment" = "情感";
+"dimension_urgency" = "紧急度";
+"dimension_timeframe" = "时间范围";
+"dimension_action_type" = "行动类型";
+"dimension_difficulty" = "难度";
+"dimension_specificity" = "具体程度";

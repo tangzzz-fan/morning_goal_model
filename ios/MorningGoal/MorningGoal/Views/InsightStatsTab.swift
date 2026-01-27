@@ -74,7 +74,7 @@ struct InsightStatsTab: View {
                     .padding(.top, Spacing.md)
                 }
             }
-            .navigationTitle("洞察统计")
+            .navigationTitle(LocalizedStringKey("stats_title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -94,7 +94,7 @@ struct InsightStatsTab: View {
 
     private var insightsSection: some View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
-            sectionHeader("智能洞察", icon: "sparkles")
+            sectionHeader("stats_section_smart_insights", icon: "sparkles")
 
             ForEach(viewModel.insights, id: \.id) { insight in
                 InsightCardView(insight: insight)
@@ -105,7 +105,7 @@ struct InsightStatsTab: View {
     // MARK: - 周期选择器
 
     private var periodPicker: some View {
-        Picker("周期", selection: $viewModel.selectedPeriod) {
+        Picker(LocalizedStringKey("stats_period_picker"), selection: $viewModel.selectedPeriod) {
             ForEach(AggregationPeriod.allCases, id: \.self) { period in
                 Text(period.displayName).tag(period)
             }
@@ -120,7 +120,7 @@ struct InsightStatsTab: View {
         VStack(spacing: Spacing.md) {
             ProgressView()
                 .tint(Color.Design.sunriseGold)
-            Text("正在加载统计数据...")
+            Text(LocalizedStringKey("stats_loading"))
                 .font(Typography.caption)
                 .foregroundColor(Color.Design.mutedGray)
         }
@@ -139,7 +139,7 @@ struct InsightStatsTab: View {
                 .font(Typography.body)
                 .foregroundColor(Color.Design.softWhite)
                 .multilineTextAlignment(.center)
-            Button("重试") {
+            Button(LocalizedStringKey("stats_error_retry")) {
                 viewModel.loadData()
             }
             .buttonStyle(SunriseGoldButtonStyle())
@@ -151,7 +151,7 @@ struct InsightStatsTab: View {
 
     private func quickStatsSection(_ stats: AggregatedStats) -> some View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
-            sectionHeader("概览", icon: "chart.bar.fill")
+            sectionHeader("stats_section_overview", icon: "chart.bar.fill")
 
             LazyVGrid(columns: [
                 GridItem(.flexible()),
@@ -159,21 +159,21 @@ struct InsightStatsTab: View {
                 GridItem(.flexible())
             ], spacing: Spacing.sm) {
                 StatCard(
-                    title: "总目标",
+                    title: "stats_total_goals",
                     value: "\(stats.totalGoals)",
                     icon: "target",
                     color: Color.Design.sunriseGold
                 )
 
                 StatCard(
-                    title: "已分析",
+                    title: "stats_analyzed",
                     value: "\(stats.analyzedGoals)",
                     icon: "brain.head.profile",
                     color: .cyan
                 )
 
                 StatCard(
-                    title: "已纠正",
+                    title: "stats_corrected",
                     value: "\(stats.correctedGoals)",
                     icon: "pencil.and.outline",
                     color: .green
@@ -186,7 +186,7 @@ struct InsightStatsTab: View {
 
     private var topicDistributionSection: some View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
-            sectionHeader("主题分布", icon: "tag.fill")
+            sectionHeader("stats_section_topic_dist", icon: "tag.fill")
 
             VStack(spacing: Spacing.xs) {
                 ForEach(viewModel.topicDistribution.prefix(8)) { item in
@@ -240,9 +240,9 @@ struct InsightStatsTab: View {
     private func sentimentTrendSection(_ trend: SentimentTrendResult) -> some View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
             HStack {
-                sectionHeader("情感趋势", icon: "heart.fill")
+                sectionHeader("stats_section_sentiment_trend", icon: "heart.fill")
                 Spacer()
-                Text(String(format: "平均: %.2f", trend.averageSentiment))
+                Text(String(format: NSLocalizedString("stats_avg_sentiment", comment: ""), trend.averageSentiment))
                     .font(Typography.caption)
                     .foregroundColor(sentimentColor(trend.averageSentiment))
             }
@@ -251,14 +251,14 @@ struct InsightStatsTab: View {
             let filteredPoints = trend.dataPoints.filter { $0.value != 0 }
             Chart(filteredPoints) { point in
                 LineMark(
-                    x: .value("日期", point.date),
-                    y: .value("情感", point.value)
+                    x: .value(LocalizedStringKey("stats_chart_date"), point.date),
+                    y: .value(LocalizedStringKey("stats_chart_sentiment"), point.value)
                 )
                 .foregroundStyle(Color.Design.sunriseGold)
 
                 PointMark(
-                    x: .value("日期", point.date),
-                    y: .value("情感", point.value)
+                    x: .value(LocalizedStringKey("stats_chart_date"), point.date),
+                    y: .value(LocalizedStringKey("stats_chart_sentiment"), point.value)
                 )
                 .foregroundStyle(sentimentColor(point.value))
             }
@@ -268,7 +268,8 @@ struct InsightStatsTab: View {
                     AxisGridLine()
                     AxisValueLabel {
                         if let labelValue = value.as(Double.self) {
-                            Text(labelValue == 1 ? "积极" : (labelValue == -1 ? "消极" : "中性"))
+                            Text(labelValue == 1 ? LocalizedStringKey("stats_sentiment_positive") :
+                                (labelValue == -1 ? LocalizedStringKey("stats_sentiment_negative") : LocalizedStringKey("stats_sentiment_neutral")))
                                 .font(.system(size: 10))
                                 .foregroundColor(Color.Design.mutedGray)
                         }
@@ -292,12 +293,12 @@ struct InsightStatsTab: View {
 
     private var goalCountTrendSection: some View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
-            sectionHeader("目标数量趋势", icon: "chart.line.uptrend.xyaxis")
+            sectionHeader("stats_section_goal_trend", icon: "chart.line.uptrend.xyaxis")
 
             Chart(viewModel.goalCountTrend) { point in
                 BarMark(
-                    x: .value("日期", point.date),
-                    y: .value("数量", point.count)
+                    x: .value(LocalizedStringKey("stats_chart_date"), point.date),
+                    y: .value(LocalizedStringKey("stats_chart_count"), point.count)
                 )
                 .foregroundStyle(
                     point.value != 0 ? Color.Design.sunriseGold : Color.Design.mutedGray.opacity(0.3)
@@ -320,7 +321,7 @@ struct InsightStatsTab: View {
 
     private var weekdayDistributionSection: some View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
-            sectionHeader("星期分布", icon: "calendar")
+            sectionHeader("stats_section_weekday_dist", icon: "calendar")
 
             HStack(spacing: 4) {
                 ForEach(viewModel.weekdayDistribution) { item in
@@ -353,9 +354,9 @@ struct InsightStatsTab: View {
     private func confidenceSection(_ confidence: DimensionConfidence) -> some View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
             HStack {
-                sectionHeader("模型置信度", icon: "gauge.with.dots.needle.bottom.50percent")
+                sectionHeader("stats_section_confidence", icon: "gauge.with.dots.needle.bottom.50percent")
                 Spacer()
-                Text(String(format: "总体: %.0f%%", confidence.overall * 100))
+                Text(String(format: NSLocalizedString("stats_confidence_overall", comment: ""), confidence.overall * 100))
                     .font(Typography.caption)
                     .foregroundColor(confidenceColor(confidence.overall))
             }
@@ -364,13 +365,13 @@ struct InsightStatsTab: View {
                 GridItem(.flexible()),
                 GridItem(.flexible())
             ], spacing: Spacing.sm) {
-                ConfidenceRow(label: "主题", value: confidence.topic)
-                ConfidenceRow(label: "情感", value: confidence.sentiment)
-                ConfidenceRow(label: "紧急度", value: confidence.urgency)
-                ConfidenceRow(label: "时间范围", value: confidence.timeFrame)
-                ConfidenceRow(label: "行动类型", value: confidence.actionType)
-                ConfidenceRow(label: "难度", value: confidence.difficulty)
-                ConfidenceRow(label: "具体程度", value: confidence.specificity)
+                ConfidenceRow(label: "dimension_topic", value: confidence.topic)
+                ConfidenceRow(label: "dimension_sentiment", value: confidence.sentiment)
+                ConfidenceRow(label: "dimension_urgency", value: confidence.urgency)
+                ConfidenceRow(label: "dimension_timeframe", value: confidence.timeFrame)
+                ConfidenceRow(label: "dimension_action_type", value: confidence.actionType)
+                ConfidenceRow(label: "dimension_difficulty", value: confidence.difficulty)
+                ConfidenceRow(label: "dimension_specificity", value: confidence.specificity)
             }
             .padding()
             .background(Color.Design.darkIndigo.opacity(0.5))
@@ -384,7 +385,7 @@ struct InsightStatsTab: View {
         HStack(spacing: Spacing.xs) {
             Image(systemName: icon)
                 .foregroundColor(Color.Design.sunriseGold)
-            Text(title)
+            Text(LocalizedStringKey(title))
                 .font(Typography.headline)
                 .foregroundColor(Color.Design.softWhite)
         }
@@ -420,7 +421,7 @@ struct InsightStatsTab: View {
                     .font(Typography.title)
                     .foregroundColor(Color.Design.softWhite)
 
-                Text(title)
+                Text(LocalizedStringKey(title))
                     .font(Typography.caption)
                     .foregroundColor(Color.Design.mutedGray)
             }
@@ -437,7 +438,7 @@ struct InsightStatsTab: View {
 
         var body: some View {
             HStack {
-                Text(label)
+                Text(LocalizedStringKey(label))
                     .font(Typography.caption)
                     .foregroundColor(Color.Design.softWhite)
 

@@ -96,6 +96,10 @@
 "history_empty_message" = "Start recording your first goal!";
 "history_today" = "Today";
 "history_yesterday" = "Yesterday";
+"history_generating_insight" = "Generating history insight...";
+"history_no_insight" = "No insight available";
+"history_wrong_classification" = "Wrong classification?";
+"history_close" = "Close";
 
 // MARK: - Streak
 "streak_days" = "%d days";
@@ -111,6 +115,11 @@
 "debug_clear_all" = "Clear All Data";
 "debug_cancel" = "Cancel";
 "debug_menu_title" = "Debug Options";
+"debug_model_test_page" = "Model Test Page";
+"debug_quality_dashboard" = "Quality Dashboard";
+"debug_enhanced_dashboard" = "Enhanced Quality Analysis";
+"debug_model_debug_ui" = "🔮 Model Debug UI";
+"debug_cloudkit_status" = "☁️ CloudKit Status";
 
 // MARK: - Streak Settings
 "streak_settings_title" = "Streak Settings";
@@ -120,6 +129,9 @@
 "streak_settings_tip_message" = "This will clear existing data and create %d consecutive records (excluding today)";
 "streak_settings_confirm" = "Confirm";
 "streak_settings_cancel" = "Cancel";
+"streak_0_days" = "0 days";
+"streak_90_days" = "90 days";
+"streak_quick_select" = "Quick Select";
 
 // MARK: - On This Day Settings
 "on_this_day_settings_title" = "On This Day";
@@ -127,6 +139,8 @@
 "on_this_day_settings_years" = "Add %d year(s) ago";
 "on_this_day_settings_tip_message" = "This will add mock data for %d year(s) ago\nFor testing 'On This Day' feature";
 "on_this_day_settings_confirm" = "Add";
+"years_1" = "1 year";
+"years_5" = "5 years";
 
 // MARK: - Common
 "year" = "year";
@@ -138,3 +152,40 @@
 "save" = "Save";
 "done" = "Done";
 
+// MARK: - Navigation
+"nav_goals" = "Goals";
+"nav_stats" = "Stats";
+"nav_insights" = "Insights";
+
+// MARK: - Insight Stats
+"stats_title" = "Insight Stats";
+"stats_period_picker" = "Period";
+"stats_loading" = "Loading stats data...";
+"stats_error_retry" = "Retry";
+"stats_section_smart_insights" = "Smart Insights";
+"stats_section_overview" = "Overview";
+"stats_total_goals" = "Total Goals";
+"stats_analyzed" = "Analyzed";
+"stats_corrected" = "Corrected";
+"stats_section_topic_dist" = "Topic Distribution";
+"stats_section_sentiment_trend" = "Sentiment Trend";
+"stats_section_goal_trend" = "Goal Count Trend";
+"stats_section_weekday_dist" = "Weekday Distribution";
+"stats_section_confidence" = "Model Confidence";
+"stats_chart_date" = "Date";
+"stats_chart_sentiment" = "Sentiment";
+"stats_chart_count" = "Count";
+"stats_sentiment_positive" = "Positive";
+"stats_sentiment_negative" = "Negative";
+"stats_sentiment_neutral" = "Neutral";
+"stats_avg_sentiment" = "Avg: %.2f";
+"stats_confidence_overall" = "Overall: %.0f%%";
+
+// Dimensions
+"dimension_topic" = "Topic";
+"dimension_sentiment" = "Sentiment";
+"dimension_urgency" = "Urgency";
+"dimension_timeframe" = "TimeFrame";
+"dimension_action_type" = "ActionType";
+"dimension_difficulty" = "Difficulty";
+"dimension_specificity" = "Specificity";

@@ -30,52 +30,41 @@ struct RootView: View {
     @State private var showModelDebug = false
     @State private var showCloudKitStatus = false
 
+    @State private var forceRefresh = false
+
     var body: some View {
         Group {
-            if settings.first?.committed != true {
+            if settings.first?.committed != true && !forceRefresh {
                 OnboardingView {
                     // Force refresh view state when onboarding completes
+                    forceRefresh = true
                 }
             } else {
+                #if DEBUG
                 TabView {
                     // Tab 1: Main (History)
-                    HistoryListView(shouldCelebrate: $shouldCelebrate)
-                        .fullScreenCover(isPresented: $showTodayInput) {
-                            TodayInputView(onComplete: {
-                                shouldCelebrate = true
-                                showTodayInput = false
-                            })
-                            .environment(\.managedObjectContext, context)
-                        }
-                        .onAppear {
-                            checkAndShowInput()
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 2.1) {
-                                inputPresentationAllowed = true
-                                checkAndShowInput()
-                            }
-                        }
-                        .onChange(of: todayEntries.count) { _, _ in
-                            checkAndShowInput()
-                        }
+                    mainHistoryView
                         .tabItem {
-                            Label("目标", systemImage: "list.bullet")
+                            Label(LocalizedStringKey("nav_goals"), systemImage: "list.bullet")
                         }
 
                     // Tab 2: Insight Stats (数据聚合统计)
                     InsightStatsTab(context: context)
                         .tabItem {
-                            Label("统计", systemImage: "chart.bar.fill")
+                            Label(LocalizedStringKey("nav_stats"), systemImage: "chart.bar.fill")
                         }
 
-                    #if DEBUG
                     InsightModelDebugTab()
                         .tabItem {
-                            Label("洞察", systemImage: "brain.head.profile")
+                            Label(LocalizedStringKey("nav_insights"), systemImage: "brain.head.profile")
                         }
-                    #endif
                 }
                 // Apply global accent color
                 .tint(Color.Design.sunriseGold)
+                #else
+                // Production: Single page application (No TabBar)
+                mainHistoryView
+                #endif
             }
         }
         .overlay(alignment: .bottomTrailing) {
@@ -104,19 +93,19 @@ struct RootView: View {
             Button(LocalizedStringKey("debug_add_on_this_day")) {
                 showOnThisDaySettings = true
             }
-            Button("模型测试页面") {
+            Button(LocalizedStringKey("debug_model_test_page")) {
                 showModelTest = true
             }
-            Button("模型质量仪表板") {
+            Button(LocalizedStringKey("debug_quality_dashboard")) {
                 showQualityDashboard = true
             }
-            Button("增强质量分析") {
+            Button(LocalizedStringKey("debug_enhanced_dashboard")) {
                 showEnhancedQualityDashboard = true
             }
-            Button("🔮 模型调试界面") {
+            Button(LocalizedStringKey("debug_model_debug_ui")) {
                 showModelDebug = true
             }
-            Button("☁️ CloudKit 同步状态") {
+            Button(LocalizedStringKey("debug_cloudkit_status")) {
                 showCloudKitStatus = true
             }
             Button(LocalizedStringKey("debug_view_on_this_day")) {
@@ -159,6 +148,27 @@ struct RootView: View {
         .fullScreenCover(item: $testOnThisDayEntry) { entry in
             OnThisDayCardView(entry: entry)
         }
+    }
+
+    private var mainHistoryView: some View {
+        HistoryListView(shouldCelebrate: $shouldCelebrate)
+            .fullScreenCover(isPresented: $showTodayInput) {
+                TodayInputView(onComplete: {
+                    shouldCelebrate = true
+                    showTodayInput = false
+                })
+                .environment(\.managedObjectContext, context)
+            }
+            .onAppear {
+                checkAndShowInput()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2.1) {
+                    inputPresentationAllowed = true
+                    checkAndShowInput()
+                }
+            }
+            .onChange(of: todayEntries.count) { _, _ in
+                checkAndShowInput()
+            }
     }
 
     private func checkAndShowInput() {
@@ -236,11 +246,11 @@ struct StreakSettingsView: View {
                                 .tint(Color.Design.sunriseGold)
 
                             HStack {
-                                Text("0天")
+                                Text(LocalizedStringKey("streak_0_days"))
                                     .font(Typography.caption)
                                     .foregroundColor(Color.Design.mutedGray)
                                 Spacer()
-                                Text("90天")
+                                Text(LocalizedStringKey("streak_90_days"))
                                     .font(Typography.caption)
                                     .foregroundColor(Color.Design.mutedGray)
                             }
@@ -255,13 +265,13 @@ struct StreakSettingsView: View {
 
                     // 快速选择按钮
                     VStack(spacing: Spacing.sm) {
-                        Text("快速选择")
+                        Text(LocalizedStringKey("streak_quick_select"))
                             .font(Typography.caption)
                             .foregroundColor(Color.Design.mutedGray)
 
                         HStack(spacing: Spacing.sm) {
                             ForEach([7, 14, 30, 60, 90], id: \.self) { days in
-                                Button("\(days)天") {
+                                Button(String(format: NSLocalizedString("streak_days", comment: ""), days)) {
                                     streakDays = days
                                 }
                                 .buttonStyle(QuickSelectButtonStyle(isSelected: streakDays == days))
@@ -359,11 +369,11 @@ struct OnThisDaySettingsView: View {
                                 .tint(Color.Design.sunriseGold)
 
                             HStack {
-                                Text("1 年")
+                                Text(LocalizedStringKey("years_1"))
                                     .font(Typography.caption)
                                     .foregroundColor(Color.Design.mutedGray)
                                 Spacer()
-                                Text("5 年")
+                                Text(LocalizedStringKey("years_5"))
                                     .font(Typography.caption)
                                     .foregroundColor(Color.Design.mutedGray)
                             }
@@ -373,7 +383,7 @@ struct OnThisDaySettingsView: View {
                         // 快捷选择
                         HStack(spacing: Spacing.sm) {
                             ForEach([1, 2, 3, 5], id: \.self) { years in
-                                Button("\(years) 年") {
+                                Button("\(years) " + NSLocalizedString("years", comment: "")) {
                                     yearsAgo = years
                                 }
                                 .buttonStyle(QuickSelectButtonStyle(isSelected: yearsAgo == years))

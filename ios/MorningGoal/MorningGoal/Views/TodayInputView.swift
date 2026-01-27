@@ -11,6 +11,8 @@ struct TodayInputView: View {
     @State private var showOnThisDay = false
     @State private var selectedEntryForCard: GoalEntry?
     @State private var titleText: String = ""
+    @State private var commitProgress: Double = 0.0
+    @State private var isCommitting: Bool = false
 
     // 洞察模型管理器
     @State private var modelManager = InsightModelManagerWrapper()
@@ -199,7 +201,8 @@ struct TodayInputView: View {
 
     private var currentDateText: String {
         let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy年MM月dd日"
+        formatter.dateStyle = .long
+        formatter.timeStyle = .none
         return formatter.string(from: Date())
     }
 
@@ -229,6 +232,19 @@ struct TodayInputView: View {
                         let generator = UIImpactFeedbackGenerator(style: .medium)
                         generator.impactOccurred()
                     }
+
+                // History Insight Mini Card (Floating above input)
+                if showOnThisDay, let entry = onThisDayEntry {
+                    OnThisDayMiniCard(entry: entry)
+                        .onTapGesture {
+                            selectedEntryForCard = entry
+                        }
+                        .transition(.asymmetric(
+                            insertion: .move(edge: .top).combined(with: .opacity),
+                            removal: .move(edge: .top).combined(with: .opacity)
+                        ))
+                        .padding(.bottom, Spacing.sm)
+                }
 
                 // 文本输入区域 - 单行输入，按回车键保存
                 TextField(LocalizedStringKey("today_goal_placeholder"), text: $text)
@@ -287,21 +303,26 @@ struct TodayInputView: View {
                 .frame(height: 20)
                 .animation(.easeInOut(duration: 0.3), value: saveStatus)
 
-                Spacer()
+                Spacer() // Push button to center-bottom
 
-                // 历史上的今天小卡片 - 在提示信息上方
-                if showOnThisDay, let entry = onThisDayEntry {
-                    OnThisDayMiniCard(entry: entry)
-                        .onTapGesture {
-                            selectedEntryForCard = entry
+                // 长按提交按钮 (Long Press to Commit)
+                // Centered visually between Input and Bottom
+                if !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                    VStack {
+                        CommitDeviceView(
+                            progress: $commitProgress,
+                            isCommitting: $isCommitting,
+                            size: 80,
+                            duration: 0.8
+                        ) {
+                            saveGoal()
                         }
-                        .transition(.asymmetric(
-                            insertion: .move(edge: .bottom).combined(with: .opacity),
-                            removal: .move(edge: .bottom).combined(with: .opacity)
-                        ))
-                        .padding(.horizontal, Spacing.xl)
-                        .padding(.bottom, Spacing.sm)
+                        .transition(.scale.combined(with: .opacity))
+                    }
+                    .frame(maxWidth: .infinity) // Ensure horizontal centering
                 }
+
+                Spacer() // Balance below button
 
                 // 提示文本
                 VStack(spacing: Spacing.xs) {

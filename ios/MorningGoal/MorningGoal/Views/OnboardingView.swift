@@ -52,8 +52,7 @@ struct OnboardingView: View {
     }
 
     private func commit() {
-        let generator = UINotificationFeedbackGenerator()
-        generator.notificationOccurred(.success)
+        // Haptics handled by LongPressButton
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
             currentStep = .permissions
         }
@@ -121,23 +120,34 @@ struct OnboardingView: View {
                     if newStep == .permissions { currentStep = .commitment }
                 }
             }
-            .safeAreaInset(edge: .bottom) {
-                VStack(spacing: Spacing.md) {
-                    HStack(spacing: Spacing.md) {
-                        ForEach(OnboardingStep.allCases, id: \.self) { step in
-                            Circle()
-                                .fill(currentStep == step ? Color.Design.sunriseGold : Color.Design.mutedGray.opacity(0.3))
-                                .frame(width: 8, height: 8)
-                        }
-                    }
-                    .padding(.vertical, Spacing.md)
 
-                    bottomActions()
+            // 底部操作栏 (Overlay)
+            VStack(spacing: Spacing.md) {
+                Spacer()
+
+                HStack(spacing: Spacing.md) {
+                    ForEach(OnboardingStep.allCases, id: \.self) { step in
+                        Circle()
+                            .fill(currentStep == step ? Color.Design.sunriseGold : Color.Design.mutedGray.opacity(0.3))
+                            .frame(width: 8, height: 8)
+                    }
                 }
-                .frame(maxWidth: .infinity)
-                .padding(.bottom, Spacing.lg)
-                .background(Color.Design.deepIndigo.opacity(0.8))
+                .padding(.vertical, Spacing.md)
+
+                bottomActions()
             }
+            .frame(maxWidth: .infinity)
+            .padding(.bottom, Spacing.lg)
+            // Use background with correct padding to obscure content behind
+            .background(
+                VStack {
+                    Spacer()
+                    Color.Design.deepIndigo.opacity(0.95)
+                        .frame(height: 140) // Approximate height of bottom area
+                        .mask(LinearGradient(gradient: Gradient(colors: [.clear, .black, .black]), startPoint: .top, endPoint: .bottom))
+                }
+                .ignoresSafeArea()
+            )
         }
         .onAppear { load() }
         .preferredColorScheme(.dark)
@@ -366,17 +376,26 @@ struct CommitmentStep: View {
 
             Spacer()
 
-            CommitDeviceView(progress: $commitmentProgress, isCommitting: $isCommitting, onCommit: {
+            CommitDeviceView(
+                progress: $commitmentProgress,
+                isCommitting: $isCommitting,
+                size: 140, // Original large size for onboarding
+                duration: 3.0 // Original duration
+            ) {
                 commitSucceeded = true
                 onCommit()
-            })
+            }
 
             Group {
                 if commitSucceeded {
                     Text(LocalizedStringKey("onboarding_commitment_success"))
                 } else if isCommitting {
                     let remaining = max(0, 3 - commitmentProgress * 3)
-                    Text(String(format: NSLocalizedString("onboarding_commitment_holding_seconds", comment: ""), remaining))
+                    if remaining < 0.1 {
+                        Text(LocalizedStringKey("onboarding_commitment_success"))
+                    } else {
+                        Text(String(format: NSLocalizedString("onboarding_commitment_holding_seconds", comment: ""), remaining))
+                    }
                 } else {
                     Text(LocalizedStringKey("onboarding_commitment_action"))
                 }
@@ -385,7 +404,6 @@ struct CommitmentStep: View {
             .foregroundColor(Color.Design.mutedGray)
 
             Spacer()
-                .frame(height: Spacing.xl)
         }
         .padding(.horizontal, Spacing.xl)
         .frame(maxWidth: .infinity)

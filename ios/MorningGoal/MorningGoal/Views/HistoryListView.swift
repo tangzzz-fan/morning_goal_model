@@ -9,7 +9,6 @@ struct HistoryListView: View {
         animation: .default
     ) private var entries: FetchedResults<GoalEntry>
 
-    @State private var groupedEntries: [Date: [GoalEntry]] = [:]
     @State private var streakTrigger = false
     @State private var previousCount: Int = 0
     @State private var showSettings = false
@@ -57,7 +56,6 @@ struct HistoryListView: View {
             }
         }
         .onAppear {
-            groupEntries()
             previousCount = entries.count
 
             // 如果需要庆祝，触发简单更新
@@ -67,7 +65,6 @@ struct HistoryListView: View {
             }
         }
         .onChange(of: entries.count) { _, newCount in
-            groupEntries()
             if newCount > previousCount {
                 streakTrigger.toggle()
             }
@@ -81,7 +78,7 @@ struct HistoryListView: View {
                 GoalDetailView(entry: entry)
                     .toolbar {
                         ToolbarItem(placement: .navigationBarLeading) {
-                            Button("关闭") {
+                            Button(LocalizedStringKey("history_close")) {
                                 selectedEntryForCorrection = nil
                             }
                         }
@@ -90,9 +87,9 @@ struct HistoryListView: View {
         }
     }
 
-    private func groupEntries() {
+    private var groupedEntries: [Date: [GoalEntry]] {
         let calendar = Calendar.current
-        groupedEntries = Dictionary(grouping: entries) { entry in
+        return Dictionary(grouping: entries) { entry in
             calendar.startOfDay(for: entry.lastUpdated)
         }
     }
@@ -208,7 +205,7 @@ struct HistoryRow: View {
                     HStack(spacing: Spacing.sm) {
                         ProgressView()
                             .scaleEffect(0.7)
-                        Text("正在生成历史洞察...")
+                        Text(LocalizedStringKey("history_generating_insight"))
                             .font(Typography.caption)
                             .foregroundColor(Color.Design.mutedGray)
                     }
@@ -224,7 +221,7 @@ struct HistoryRow: View {
                     .padding(.top, Spacing.xs)
                 } else {
                     // Empty state (should not happen often as we trigger generation immediately)
-                    Text("暂无洞察")
+                    Text(LocalizedStringKey("history_no_insight"))
                         .font(Typography.caption)
                         .foregroundColor(Color.Design.mutedGray.opacity(0.5))
                         .padding(.top, Spacing.xs)
@@ -234,7 +231,7 @@ struct HistoryRow: View {
                 Button(action: {
                     onCorrect()
                 }) {
-                    Text("Wrong classification?")
+                    Text(LocalizedStringKey("history_wrong_classification"))
                         .font(.caption2)
                         .foregroundColor(Color.Design.mutedGray)
                         .underline()
